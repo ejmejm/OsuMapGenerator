@@ -1,0 +1,6 @@
+osu_copy/
+data/formatted_beatmaps/maps
+data/formatted_beatmaps/songs
+data/formatted_beatmaps/*.csv
+data/raw_beatmaps/
+data/*.gz
