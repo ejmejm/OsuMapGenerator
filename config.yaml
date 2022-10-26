@@ -1,0 +1,29 @@
+device: 'cuda'
+
+# Constants
+beatmap_path: 'data/formatted_beatmaps/'
+vocab_dir: 'preprocessing/vocab/'
+model_save_path: 'models/default_model.pt'
+
+# Preprocessing
+tokenizer_type: default # sentencepiece
+spm_vocab_size: 1000 # Only used if using sentencepiece
+
+# Model
+d_model: 256
+d_hid: 512
+n_head: 4
+n_encoder_layers: 4
+n_decoder_layers: 4
+
+max_src_len: 256
+max_tgt_len: 1024
+
+load_model: True
+
+# Training
+lr: 0.0003
+epochs: 10
+batch_size: 32
+dropout: 0.4
+eval_freq: 10000 # In number of samples
