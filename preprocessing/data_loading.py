@@ -100,6 +100,26 @@ def load_beatmap_data(path):
 
   return metadata, timing_points, hit_objects
 
+def load_beatmap_token_data(path):
+  """
+  Loads beatmap data from a .osu file.
+  
+  Args:
+    path: Path to the .osu file.
+  Returns:
+    A dictionary and two lists containing metatdata, timing point tokens, and hit object tokens.
+  """
+
+  with open(path, 'r', encoding='utf8') as f:
+    data = f.read()
+
+  lines = data.split('\n')
+  metadata = {}
+  timing_points_token = []
+  hit_objects_token = []
+
+  return metadata, timing_points_token, hit_objects_token
+
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
   def __init__(self, root_dir, include_audio=True):
@@ -131,8 +151,70 @@ class OsuDataset(Dataset):
 
     return metadata, time_points, hit_objects, audio_data
 
+# TODO these datasets should be moved to a single python file.
+class OsuTokenGenerationDataset(Dataset):
+  def __init__(self, root_dir, include_audio=True):
+    self.root_dir = root_dir
+    self.include_audio = include_audio
+    self.map_dir = os.path.join(root_dir, 'maps')
+    self.audio_dir = os.path.join(root_dir, 'songs')
+  
+    # Mapping of map_id to song_id
+    self.mapping = pd.read_csv(
+      os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
+    self.mapping = self.mapping.to_dict()['song']
+    self.map_list = list(self.mapping.keys())
+
+  def __len__(self):
+    # This returns the number of maps, not the actual number of samples
+    return len(self.map_list)
+
+  def __getitem__(self, idx):
+    # Need to return selected metadata text, hitobject text, and audio data separately
+    map_id = self.map_list[idx]
+    metadata, time_points, hit_objects = load_beatmap_data(
+      os.path.join(self.map_dir, map_id))
+    if self.include_audio:
+      # TODO: Add audio loading here
+      audio_data = []
+    else:
+      audio_data = []
+
+    return map_id, metadata, time_points, hit_objects, audio_data
+
+class OsuTokensDataset(Dataset):
+  def __init__(self, root_dir, include_audio=True):
+    self.root_dir = root_dir
+    self.include_audio = include_audio
+    self.map_dir = os.path.join(root_dir, 'maps')
+    self.audio_dir = os.path.join(root_dir, 'songs')
+  
+    # Mapping of map_id to song_id
+    self.mapping = pd.read_csv(
+      os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
+    self.mapping = self.mapping.to_dict()['song']
+    self.map_list = list(self.mapping.keys())
+
+  def __len__(self):
+    # This returns the number of maps, not the actual number of samples
+    return len(self.map_list)
+
+  def __getitem__(self, idx):
+    # Need to return selected metadata text, hitobject text, and audio data separately
+    map_id = self.map_list[idx]
+    metadata, time_points, hit_objects = load_beatmap_data(
+      os.path.join(self.map_dir, map_id))
+    if self.include_audio:
+      # TODO: Add audio loading here
+      audio_data = []
+    else:
+      audio_data = []
+
+    return map_id, metadata, time_points, hit_objects, audio_data
+
+
 # Get dataloaders for training test and validation
-def get_dataloaders(root_dir, batch_size=1, include_audio=True,
+def get_dataloaders(config, root_dir, batch_size=1, include_audio=True,
                     val_split=0.05, test_split=0.1, shuffle=True):
   dataset = OsuDataset(root_dir, include_audio=include_audio)
   # Split dataset into train, val, and test

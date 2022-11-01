@@ -27,3 +27,10 @@ epochs: 10
 batch_size: 32
 dropout: 0.4
 eval_freq: 10000 # In number of samples
+
+use_vqvae: True
+n_down: 2
+n_resblk: 3
+codebook_size: 1024
+dim_vq_latent: 1024
+lambda_beta: 1

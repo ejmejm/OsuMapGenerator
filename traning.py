@@ -92,7 +92,7 @@ if __name__ == '__main__':
   config = load_config()
   
   # Get data loaders
-  train_loader, val_loader, test_loader = get_dataloaders(
+  train_loader, val_loader, test_loader = get_dataloaders(config, 
     config['beatmap_path'], batch_size=config.get('batch_size'))
   preprocess_text, vocab = get_text_preprocessor(config)
 
