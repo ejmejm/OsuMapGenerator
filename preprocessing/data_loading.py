@@ -1,6 +1,9 @@
 import os
 import re
 
+from audio_processing import process_song
+from utils import load_config
+
 import numpy as np
 import pandas as pd
 import torch
@@ -13,13 +16,13 @@ TIMING_POINT_PATTERN = r'^([0-9,.]+)(?://.*)?$'
 HIT_OBJECT_PATTERN = r'^(.+?)(?://.*)?$'
 
 
-
 DEFAULT_METADATA = set([
   'DistanceSpacing', # 'AudioLeadIn', 'Countdown', 'CountdownOffset', 
   'BeatDivisor', 'GridSize', 'CircleSize', 'OverallDifficulty', 'ApproachRate',
   'SliderMultiplier', 'SliderTickRate', 'HPDrainRate'
 ])
 
+config = load_config()
 
 def load_beatmap_data(path):
   """
@@ -125,7 +128,10 @@ class OsuDataset(Dataset):
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
       # TODO: Add audio loading here
-      audio_data = []
+      processed_audio = process_song(os.path.join(self.audio_dir, self.mapping[idx]))
+      audio_data = np.frombuffer(buffer=processed_audio, dtype=np.float32, count=-1)
+      audio_data = audio_data[0:processed_audio.shape[0]*processed_audio.shape[1]]
+      audio_data = np.reshape(audio_data, processed_audio.shape)
     else:
       audio_data = []
 
@@ -175,8 +181,8 @@ def sample_split_from_map(
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
-  prior_audio = []
-  new_audio = []
+  prior_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in prior_ho]
+  new_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in new_ho]
 
   return selected_metadata, selected_time_points, prior_ho, \
          new_ho, prior_audio, new_audio
@@ -196,7 +202,8 @@ def sample_from_map(
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
-  selected_audio = []
+  selected_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in selected_hit_objects]
+
 
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio

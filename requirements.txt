@@ -5,3 +5,5 @@ torch==1.12.1
 torchtext==0.13.1
 torchvision==0.13.0
 tqdm==4.64.0
+essentia
+pydub

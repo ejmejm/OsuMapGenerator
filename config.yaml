@@ -27,3 +27,8 @@ epochs: 10
 batch_size: 32
 dropout: 0.4
 eval_freq: 10000 # In number of samples
+
+# Audio
+segment_length: 23 # Audio segmentation size
+prev_audio_segments_per_hitobject: 15 # How many previous audio segments to consider for the acoompanying audio signal of each hit object
+next_audio_segments_per_hitobject: 0 # Same but for next
