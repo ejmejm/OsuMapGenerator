@@ -10,9 +10,9 @@ by Edan Meyer, ... add names here
 6. There is currently no way to produce sample maps.
 
 ### Audio preprocessing
-1. Song file sementation: first, we check if a segmented version of our song already exists, if not, we break it down into equal sized chunks and store them in a directory with the song's name
-2. Audio conversion to Mono: combine the stereo channels to create a single-channelled monotune signal
-3. Apply STFT: to convert to audio signals from time domain to frequency domain
-4. Apply MEL-filtering: to compress the dimensionality of the produced spectra down to 80 frequency bands
-5. Apply numerically-stable log-scaling: to give rise to frequency bands that represent actual human loudness perception levels
-6. Sample retrieval: save all the processed segments into one large numpy array, for each hit-object, retrieve the segment at the corresponding time snapshot, in addition to a few antecedent and subsequent segments.
+1. **Song file sementation**: first, we check if a segmented version of our song already exists, if not, we break it down into equal sized chunks and store them in a directory with the song's name
+2. **Audio conversion to Mono**: combine the stereo channels to create a single-channelled monotune signal
+3. **Apply STFT**: to convert to audio signals from time domain to frequency domain
+4. **Apply MEL-filtering**: to compress the dimensionality of the produced spectra down to 80 frequency bands
+5. **Apply numerically-stable log-scaling**: to give rise to frequency bands that represent actual human loudness perception levels
+6. **Sample retrieval**: save all the processed segments into one large numpy array, for each hit-object, retrieve the segment at the corresponding time snapshot, in addition to a few antecedent and subsequent segments.*
