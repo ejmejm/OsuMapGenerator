@@ -21,6 +21,7 @@ parser = argparse.ArgumentParser()
 
 
 BEATMAP_PATH = 'data/formatted_beatmaps/'
+MAX_HIT_OBJECTS = 50
 
 
 def eval(model, data_loader, preprocess_text, config):
@@ -56,7 +57,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
   for epoch_idx in range(config['epochs']):
     for batch in (pbar := tqdm(train_loader)):
       model.train()
-      batch_samples = [sample_from_map(*map) for map in batch]
+      batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
       training_samples = [format_training_data(*map) for map in batch_samples]
 
       src, tgt = zip(*training_samples)
