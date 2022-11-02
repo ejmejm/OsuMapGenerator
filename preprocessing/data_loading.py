@@ -9,7 +9,7 @@ from torchvision import transforms, utils
 
 VERSION_PATTERN = r'osu file format v(\d+)(?://.*)?$'
 METADATA_ENTRY_PATTERN = r'^([a-zA-Z]+):(.+?)(?://.*)?$'
-TIMING_POINT_PATTERN = r'^([0-9,.]+)(?://.*)?$'
+TIMING_POINT_PATTERN = r'^([0-9,.-]+)(?://.*)?$'
 HIT_OBJECT_PATTERN = r'^(.+?)(?://.*)?$'
 
 
@@ -102,7 +102,7 @@ def load_beatmap_data(path):
 
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
-  def __init__(self, root_dir, include_audio=True):
+  def __init__(self, root_dir, include_audio=True, map_ids=None):
     self.root_dir = root_dir
     self.include_audio = include_audio
     self.map_dir = os.path.join(root_dir, 'maps')
@@ -112,11 +112,20 @@ class OsuDataset(Dataset):
     self.mapping = pd.read_csv(
       os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
     self.mapping = self.mapping.to_dict()['song']
+    if map_ids is not None:
+      new_mapping = {}
+      for map_id in map_ids:
+        new_mapping[map_id] = self.mapping[map_id]
+      self.mapping = new_mapping
     self.map_list = list(self.mapping.keys())
 
   def __len__(self):
     # This returns the number of maps, not the actual number of samples
     return len(self.map_list)
+
+  def get_map_path(self, idx):
+    map_id = self.map_list[idx]
+    return os.path.join(self.map_dir, map_id)
 
   def __getitem__(self, idx):
     # Need to return selected metadata text, hitobject text, and audio data separately
@@ -193,6 +202,10 @@ def sample_from_map(
 
   start_idx = np.random.randint(0, max(1, len(hit_objects) - n_hit_objects))
   selected_hit_objects = hit_objects[start_idx:start_idx + n_hit_objects]
+  if start_idx == 0:
+    selected_hit_objects.insert(0, '<s>')
+  if start_idx + n_hit_objects == len(hit_objects):
+    selected_hit_objects.append('</s>')
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
@@ -217,8 +230,10 @@ def format_training_data(metadata, time_points, hit_objects, audio_data):
 
   pred_str = ''
   for ho in hit_objects:
-    pred_str += f'<HitObject>{ho}'
-  pred_str += '<HitObject>'
+    if ho in ['<s>', '</s>']:
+      pred_str += ho
+    else:
+      pred_str += f'<HitObject>{ho}'
 
   return prior_str, pred_str
 

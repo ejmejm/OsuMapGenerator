@@ -4,6 +4,8 @@ data/formatted_beatmaps/songs
 data/formatted_beatmaps/*.csv
 data/raw_beatmaps/*.osz
 data/*.gz
+output/*
+other_cofigs/
 **__pycache__/
 **.pt
 **.model
