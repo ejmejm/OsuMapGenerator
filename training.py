@@ -13,7 +13,7 @@ from models import DefaultTransformer, model_from_config
 from preprocessing.data_loading import get_dataloaders, sample_from_map
 from preprocessing.data_loading import format_training_data
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
-from utils import load_config
+from utils import load_config, log
 
 # Create arguments
 parser = argparse.ArgumentParser()
@@ -79,6 +79,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       loss = F.cross_entropy(output, target)
       losses.append(loss.item())
       pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item():.3f}')
+      log({'epoch': epoch_idx, 'train_loss': losses[-1]}, config)
       
       # Backprop
       optimizer.zero_grad()
@@ -91,6 +92,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
         last_eval = curr_idx
         eval_losses = eval(model, val_loader, preprocess_text, config)
         print(f'Epoch {epoch_idx} | Sample #{curr_idx} | Eval loss: {np.mean(eval_losses):.3f}')
+        log({'epoch': epoch_idx, 'eval_loss': np.mean(eval_losses)}, config)
 
         if 'model_save_path' in config:
           torch.save(model.state_dict(), config['model_save_path'])
@@ -102,6 +104,10 @@ if __name__ == '__main__':
   # Load args and config
   args = parser.parse_args()
   config = load_config()
+
+  if config['use_wandb']:
+    import wandb
+    wandb.init(project=config['wandb_project'], config=config)
   
   # Get data loaders
   train_loader, val_loader, test_loader = get_dataloaders(
@@ -114,7 +120,10 @@ if __name__ == '__main__':
   optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
 
   # Train the model
-  losses = train(model, train_loader, optimizer, preprocess_text, config, val_loader=val_loader)
+  try:
+    losses = train(model, train_loader, optimizer, preprocess_text, config, val_loader=val_loader)
+  except KeyboardInterrupt:
+    print('Training interrupted.')
 
   # Save the final model
   if 'model_save_path' in config:

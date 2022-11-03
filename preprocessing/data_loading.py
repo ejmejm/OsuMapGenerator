@@ -260,7 +260,7 @@ def get_time_points_in_range(time_points, hit_objects, slider_changes=None):
   if hit_objects[0] == HIT_OBJECT_START_TOKEN:
     start_time = 0
   else:
-    start_time = int(hit_objects[0].split(',')[2]) # ERROR
+    start_time = int(hit_objects[0].split(',')[2])
 
   if hit_objects[-1] == HIT_OBJECT_END_TOKEN:
     end_time = 9999999
@@ -269,13 +269,17 @@ def get_time_points_in_range(time_points, hit_objects, slider_changes=None):
 
   selected_time_points = []
   for tp in reversed(time_points):
-    tp_time = float(tp.split(',')[0]) # ERROR
+    tp_time = float(tp.split(',')[0])
     if tp_time > end_time:
       continue
     selected_time_points.append(tp)
     if tp_time <= start_time:
       break
   selected_time_points = selected_time_points[::-1]
+
+  if len(selected_time_points) == 0:
+    selected_time_points = time_points[0]
+
   first_time_step = float(selected_time_points[0].split(',')[0])
 
   selected_slider_changes = []
