@@ -100,6 +100,26 @@ def load_beatmap_data(path):
 
   return metadata, timing_points, hit_objects
 
+def load_token_data(path):
+  """
+  Loads token data from mapid.txt file
+  
+  Args:
+    path: Path to the {mapid}.txt file.
+  Returns:
+    a list of token data
+  """
+
+  with open(path, 'r', encoding='utf8') as f:
+    data = f.read()
+
+  lines = data.split('\n')
+  tokens = []
+  for line in enumerate(lines):
+    tokens.append(line.strip().split(' '))
+
+  return tokens
+
 def load_beatmap_token_data(path):
   """
   Loads beatmap data from a .osu file.
@@ -152,7 +172,7 @@ class OsuDataset(Dataset):
     return metadata, time_points, hit_objects, audio_data
 
 # TODO these datasets should be moved to a single python file.
-class OsuTokenGenerationDataset(Dataset):
+class OsuVQVaeDataset(Dataset):
   def __init__(self, root_dir, include_audio=True):
     self.root_dir = root_dir
     self.include_audio = include_audio
@@ -172,15 +192,10 @@ class OsuTokenGenerationDataset(Dataset):
   def __getitem__(self, idx):
     # Need to return selected metadata text, hitobject text, and audio data separately
     map_id = self.map_list[idx]
-    metadata, time_points, hit_objects = load_beatmap_data(
+    _, _, hit_objects = load_beatmap_data(
       os.path.join(self.map_dir, map_id))
-    if self.include_audio:
-      # TODO: Add audio loading here
-      audio_data = []
-    else:
-      audio_data = []
 
-    return map_id, metadata, time_points, hit_objects, audio_data
+    return map_id, hit_objects
 
 class OsuTokensDataset(Dataset):
   def __init__(self, root_dir, include_audio=True):
@@ -210,13 +225,16 @@ class OsuTokensDataset(Dataset):
     else:
       audio_data = []
 
-    return map_id, metadata, time_points, hit_objects, audio_data
+    return metadata, time_points, tokens, audio_data
 
 
 # Get dataloaders for training test and validation
 def get_dataloaders(config, root_dir, batch_size=1, include_audio=True,
                     val_split=0.05, test_split=0.1, shuffle=True):
-  dataset = OsuDataset(root_dir, include_audio=include_audio)
+  if (config.get('use_vqvae')):
+    dataset = OsuTokensDataset(root_dir, include_audio=include_audio)
+  else:
+    dataset = OsuDataset(root_dir, include_audio=include_audio)
   # Split dataset into train, val, and test
   val_size = int(val_split * len(dataset))
   test_size = int(test_split * len(dataset))
@@ -228,13 +246,71 @@ def get_dataloaders(config, root_dir, batch_size=1, include_audio=True,
   collate_fn = lambda x: x
   train_loader = DataLoader(
     train_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
-  val_loader = DataLoader(
-    val_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
-  test_loader = DataLoader(
-    test_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  if val_size != 0:
+    val_loader = DataLoader(
+      val_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  else:
+    val_loader = None
+  if test_size != 0:
+    test_loader = DataLoader(
+      test_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  else:
+    test_loader = None
 
   return train_loader, val_loader, test_loader
 
+def get_vqvae_dataloaders(root_dir, batch_size=1, include_audio=True,
+                    val_split=0.05, test_split=0.1, shuffle=True):
+  dataset = OsuVQVaeDataset(root_dir, include_audio=include_audio)
+  val_size = int(val_split * len(dataset))
+  test_size = int(test_split * len(dataset))
+  train_size = len(dataset) - val_size - test_size
+
+  train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
+    dataset, [train_size, val_size, test_size])
+
+  collate_fn = lambda x: x
+  train_loader = DataLoader(
+    train_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  if val_size != 0:
+    val_loader = DataLoader(
+      val_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  else:
+    val_loader = None
+  if test_size != 0:
+    test_loader = DataLoader(
+      test_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  else:
+    test_loader = None
+
+  return train_loader, val_loader, test_loader
+
+def get_vq_tokens_dataloaders(root_dir, batch_size=1, include_audio=True,
+                    val_split=0.05, test_split=0.1, shuffle=True):
+  dataset = OsuTokensDataset(root_dir, include_audio=include_audio)
+  # Split dataset into train, val, and test
+  val_size = int(val_split * len(dataset))
+  test_size = int(test_split * len(dataset))
+  train_size = len(dataset) - val_size - test_size
+
+  train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
+    dataset, [train_size, val_size, test_size])
+
+  collate_fn = lambda x: x
+  train_loader = DataLoader(
+    train_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  if val_size != 0:
+    val_loader = DataLoader(
+      val_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  else:
+    val_loader = None
+  if test_size != 0:
+    test_loader = DataLoader(
+      test_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+  else:
+    test_loader = None
+
+  return train_loader, val_loader, test_loader
 
 # Samples a portion of data from and entire set of beatmap data
 # Target metadata items, all time_points, prior hit_objects,
@@ -283,24 +359,36 @@ def sample_from_map(
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio
 
-def format_training_data(metadata, time_points, hit_objects, audio_data):
-  prior_str = '<Metadata>'
-  for key, value in metadata.items():
-    prior_str += f'<{key}>{value}'
+def sample_hitobjects(hit_objects,
+    n_hit_objects=8):
 
-  prior_str += '<TimePoints>'
-  for tp in time_points:
-    prior_str += f'<TimePointSplit>{tp}'
+  start_idx = np.random.randint(0, max(1, len(hit_objects) - n_hit_objects))
+  selected_hit_objects = hit_objects[start_idx:start_idx + n_hit_objects]
+
+  return selected_hit_objects
+
+def format_training_data(metadata, time_points, hit_objects, audio_data):
+  prior_str = ''
+  if metadata:
+    prior_str = '<Metadata>'
+    for key, value in metadata.items():
+      prior_str += f'<{key}>{value}'
+
+  if time_points:
+    prior_str += '<TimePoints>'
+    for tp in time_points:
+      prior_str += f'<TimePointSplit>{tp}'
 
   if audio_data:
     prior_str += '<Audio>'
     for audio in audio_data:
       prior_str += f'<AudioSplit>{audio}'
 
-  pred_str = ''
-  for ho in hit_objects:
-    pred_str += f'<HitObject>{ho}'
-  pred_str += '<HitObject>'
+  if hit_objects:
+    pred_str = ''
+    for ho in hit_objects:
+      pred_str += f'<HitObject>{ho}'
+    pred_str += '<HitObject>'
 
   return prior_str, pred_str
 

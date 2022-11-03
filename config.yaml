@@ -1,4 +1,4 @@
-device: 'cuda'
+device: 'cpu'
 
 # Constants
 beatmap_path: 'data/formatted_beatmaps/'
@@ -24,7 +24,7 @@ load_model: True
 # Training
 lr: 0.0003
 epochs: 10
-batch_size: 32
+batch_size: 1
 dropout: 0.4
 eval_freq: 10000 # In number of samples
 
@@ -34,3 +34,9 @@ n_resblk: 3
 codebook_size: 1024
 dim_vq_latent: 1024
 lambda_beta: 1
+
+val_split: 0.2
+test_split: 0.2
+
+token_save_path: 'gen/tokens'
+lambda_adv: 0.2

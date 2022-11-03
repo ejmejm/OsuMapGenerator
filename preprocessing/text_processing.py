@@ -6,7 +6,7 @@ import torch
 from torch.nn import functional as F
 import torchtext as tt
 
-from models import gen_seq_mask
+from transformer import gen_seq_mask
 from utils import load_config
 
 
@@ -88,6 +88,35 @@ def prepare_tensor_seqs(src, tgt, preprocess_text, config):
 
   return src_tensor, tgt_tensor, src_mask, tgt_mask
 
+
+def prepare_tensor_vqvae(src, preprocess_text, config):
+  """Converts to tensor, pads, and send to device.
+  
+  Args:
+    src: List of strings for transformer encoder
+    tgt: List of strings for transformer decoder
+    config: Dict of config parameters
+  """
+  PAD_TOKEN = preprocess_text('<pad>')[0]
+
+  src = [[preprocess_text(obj) for obj in s] for s in src]
+
+  max_src_len = config['max_src_len']
+
+
+  src_tensors = []
+  for s in src:
+    one_tensor = []
+    for obj in s:
+      oneline = torch.tensor(obj[:max_src_len], dtype=torch.float)
+      pad_len = max_src_len - len(oneline)
+      oneline = F.pad(oneline, (0, pad_len), value=PAD_TOKEN)
+      one_tensor.append(oneline)
+    
+    src_tensors.append(torch.stack(one_tensor))
+  src_tensor = torch.stack(src_tensors)
+
+  return src_tensor
 
 # The type of tokenizer depends on the config settings
 config = load_config()

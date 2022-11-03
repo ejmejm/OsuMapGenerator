@@ -1,5 +1,6 @@
 import argparse
 import os
+from unittest import skip
 
 from einops import rearrange
 import numpy as np
@@ -8,7 +9,7 @@ from torch import nn
 from torch.nn import functional as F
 from tqdm import tqdm
 
-from models import DefaultTransformer
+from transformer import DefaultTransformer
 from preprocessing.data_loading import get_dataloaders, sample_from_map
 from preprocessing.data_loading import format_training_data
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
@@ -53,19 +54,22 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
   losses = []
   for epoch_idx in range(config['epochs']):
     for batch in (pbar := tqdm(train_loader)):
-      batch_samples = [sample_from_map(*map) for map in batch]
-      training_samples = [format_training_data(*map) for map in batch_samples]
+      if not config.get('use_vqvae'):
+        batch_samples = [sample_from_map(*map) for map in batch]
+        training_samples = [format_training_data(*map) for map in batch_samples]
 
-      src, tgt = zip(*training_samples)
-      src_tensor, tgt_tensor, src_mask, tgt_mask = prepare_tensor_seqs(src, tgt, preprocess_text, config)
-      target = tgt_tensor[1:]
-      tgt_tensor = tgt_tensor[:-1]
-      tgt_mask = tgt_mask[:-1, :-1]
+        src, tgt = zip(*training_samples)
+        src_tensor, tgt_tensor, src_mask, tgt_mask = prepare_tensor_seqs(src, tgt, preprocess_text, config)
+        target = tgt_tensor[1:]
+        tgt_tensor = tgt_tensor[:-1]
+        tgt_mask = tgt_mask[:-1, :-1]
 
-      output = model(src_tensor, tgt_tensor, src_mask, tgt_mask)
-      output = rearrange(output, 's b d -> b d s')
-      target = rearrange(target, 's b -> b s')
-
+        output = model(src_tensor, tgt_tensor, src_mask, tgt_mask)
+        output = rearrange(output, 's b d -> b d s')
+        target = rearrange(target, 's b -> b s')
+      else:
+        # TODO load token dataset
+        skip
       loss = F.cross_entropy(output, target)
       losses.append(loss.item())
       pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item():.3f}')
