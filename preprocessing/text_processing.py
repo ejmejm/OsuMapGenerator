@@ -6,7 +6,7 @@ import torch
 from torch.nn import functional as F
 import torchtext as tt
 
-from transformer import gen_seq_mask
+from models import gen_seq_mask
 from utils import load_config
 
 
@@ -49,7 +49,49 @@ def get_text_preprocessor(config):
 
     return numericalize, vocab
 
+def prepare_tensor_seq(seq, max_len, preprocess_text, config, pad=True):
+  """Converts to tensor, pads, and send to device.
+  
+  Args:
+    src: List of strings for transformer encoder
+    preprocess_text: Function that turns text into a list of numerical tokens
+    config: Dict of config parameters
+  """
+  PAD_TOKEN = preprocess_text('<pad>')[0]
+
+  seq = [preprocess_text(s) for s in seq]
+
+  seq_tensors = []
+  for s in seq:
+    seq_tensors.append(torch.tensor(s[-max_len:], dtype=torch.int64))
+    if pad:
+      pad_len = max_len - len(seq_tensors[-1])
+      seq_tensors[-1] = F.pad(seq_tensors[-1], (0, pad_len), value=PAD_TOKEN)
+  seq_tensor = torch.stack(seq_tensors).to(config['device'])
+  
+  # Sequence dim first
+  seq_tensor = seq_tensor.transpose(0, 1)
+  seq_mask = gen_seq_mask(seq_tensor.shape[0]).to(config['device'])
+
+  return seq_tensor, seq_mask
+
 def prepare_tensor_seqs(src, tgt, preprocess_text, config):
+  """Converts to tensor, pads, and send to device.
+  
+  Args:
+    src: List of strings for transformer encoder
+    tgt: List of strings for transformer decoder
+    preprocess_text: Function that turns text into a list of numerical tokens
+    config: Dict of config parameters
+  """
+  src_tensor, src_mask = prepare_tensor_seq(
+    src, config['max_src_len'], preprocess_text, config)
+  tgt_tensor, tgt_mask = prepare_tensor_seq(
+    tgt, config['max_tgt_len'], preprocess_text, config)
+  return src_tensor, tgt_tensor, src_mask, tgt_mask
+
+
+def prepare_tensor_vqvae(src, preprocess_text, config):
   """Converts to tensor, pads, and send to device.
   
   Args:
@@ -59,35 +101,24 @@ def prepare_tensor_seqs(src, tgt, preprocess_text, config):
   """
   PAD_TOKEN = preprocess_text('<pad>')[0]
 
-  src = [preprocess_text(s) for s in src]
-  tgt = [preprocess_text(t) for t in tgt]
+  src = [[preprocess_text(obj) for obj in s] for s in src]
 
   max_src_len = config['max_src_len']
-  max_tgt_len = config['max_tgt_len']
+
 
   src_tensors = []
-  tgt_tensors = []
-  for s, t in zip(src, tgt):
-    src_tensors.append(torch.tensor(s[:max_src_len], dtype=torch.int64))
-    pad_len = max_src_len - len(src_tensors[-1])
-    src_tensors[-1] = F.pad(src_tensors[-1], (0, pad_len), value=PAD_TOKEN)
+  for s in src:
+    one_tensor = []
+    for obj in s:
+      oneline = torch.tensor(obj[:max_src_len], dtype=torch.float)
+      pad_len = max_src_len - len(oneline)
+      oneline = F.pad(oneline, (0, pad_len), value=PAD_TOKEN)
+      one_tensor.append(oneline)
+    
+    src_tensors.append(torch.stack(one_tensor))
+  src_tensor = torch.stack(src_tensors)
 
-    tgt_tensors.append(torch.tensor(t[:max_tgt_len], dtype=torch.int64))
-    pad_len = max_tgt_len - len(tgt_tensors[-1])
-    tgt_tensors[-1] = F.pad(tgt_tensors[-1], (0, pad_len), value=PAD_TOKEN)
-
-  src_tensor = torch.stack(src_tensors).to(config['device'])
-  tgt_tensor = torch.stack(tgt_tensors).to(config['device'])
-
-  # Sequence dim first
-  src_tensor = src_tensor.transpose(0, 1)
-  tgt_tensor = tgt_tensor.transpose(0, 1)
-
-  src_mask = gen_seq_mask(src_tensor.shape[0]).to(config['device'])
-  tgt_mask = gen_seq_mask(tgt_tensor.shape[0]).to(config['device'])
-
-  return src_tensor, tgt_tensor, src_mask, tgt_mask
-
+  return src_tensor
 
 def prepare_tensor_vqvae(src, preprocess_text, config):
   """Converts to tensor, pads, and send to device.

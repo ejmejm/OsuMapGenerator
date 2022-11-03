@@ -10,3 +10,11 @@ def load_config(path=None):
       
   with open(path, 'r') as f:
     return yaml.load(f, Loader=yaml.FullLoader)
+
+def log(data, config):
+  if config['use_wandb']:
+    try:
+      wandb.log(data)
+    except NameError:
+      import wandb
+      wandb.log(data)

@@ -10,7 +10,7 @@ from torch import nn
 from torch.nn import functional as F
 from tqdm import tqdm
 
-from transformer import DefaultTransformer
+from models import DefaultTransformer
 from preprocessing.data_loading import get_dataloaders, get_vq_tokens_dataloaders, get_vqvae_dataloaders, sample_hitobjects
 from preprocessing.data_loading import format_training_data
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs, prepare_tensor_vqvae
@@ -145,10 +145,11 @@ def tokenize(encoder, quantizer, dataloader, preprocess_text, config):
     indices = list(indices.cpu().numpy())
     indices = [str(token) for token in indices]
 
+    os.makedirs(pjoin(config['beatmap_path'], config.get('token_save_path')))
     for line in batch:
         map_id, _ = line
         filename = '%s.txt' % (map_id)
-        with cs.open(pjoin(config.get('token_save_path'), filename), 'a+') as f:
+        with cs.open(pjoin(config['beatmap_path'], config.get('token_save_path'), filename), 'a+') as f:
             # how to store token files? should it be stored in the same path of the beatmap file?
             f.write(' '.join(indices))
             f.write('\n')
@@ -173,9 +174,9 @@ if __name__ == '__main__':
   preprocess_text, vocab = get_text_preprocessor(config)
   
   enc_channels = [1024, config.get('dim_vq_latent')]
-  dec_channels = [config.get('dim_vq_latent'), 1024, 256]
+  dec_channels = [config.get('dim_vq_latent'), 1024, config.get('max_src_len')]
   # Create the model and load when applicable
-  encoder, decoder, quantizer = build_model(256, enc_channels, dec_channels, config)
+  encoder, decoder, quantizer = build_model(config.get('max_src_len'), enc_channels, dec_channels, config)
 
   # Train the model
   losses = train(encoder, decoder, quantizer, train_loader, preprocess_text, config, val_loader=val_loader)
