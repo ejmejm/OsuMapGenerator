@@ -225,6 +225,8 @@ class OsuTokensDataset(Dataset):
     else:
       audio_data = []
 
+    tokens = load_token_data(os.path.join(self.map_dir, map_id, ".txt"))
+
     return metadata, time_points, tokens, audio_data
 
 
