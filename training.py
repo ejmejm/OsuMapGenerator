@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser()
 
 
 BEATMAP_PATH = 'data/formatted_beatmaps/'
-MAX_HIT_OBJECTS = 50
+MAX_HIT_OBJECTS = 100
 
 
 def eval(model, data_loader, preprocess_text, config):

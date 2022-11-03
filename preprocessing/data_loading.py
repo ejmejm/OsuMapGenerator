@@ -1,3 +1,4 @@
+from decimal import Decimal, getcontext
 import os
 import re
 
@@ -10,8 +11,10 @@ from torchvision import transforms, utils
 VERSION_PATTERN = r'osu file format v(\d+)(?://.*)?$'
 METADATA_ENTRY_PATTERN = r'^([a-zA-Z]+):(.+?)(?://.*)?$'
 TIMING_POINT_PATTERN = r'^([0-9,.-]+)(?://.*)?$'
+TIMING_POINT_PATTERN = r'^([0-9,.-]+)(?://.*)?$'
 HIT_OBJECT_PATTERN = r'^(.+?)(?://.*)?$'
-
+HIT_OBJECT_START_TOKEN = '<Start>'
+HIT_OBJECT_END_TOKEN = '<End>'
 
 
 DEFAULT_METADATA = set([
@@ -203,9 +206,9 @@ def sample_from_map(
   start_idx = np.random.randint(0, max(1, len(hit_objects) - n_hit_objects))
   selected_hit_objects = hit_objects[start_idx:start_idx + n_hit_objects]
   if start_idx == 0:
-    selected_hit_objects.insert(0, '<s>')
+    selected_hit_objects.insert(0, HIT_OBJECT_START_TOKEN)
   if start_idx + n_hit_objects == len(hit_objects):
-    selected_hit_objects.append('</s>')
+    selected_hit_objects.append(HIT_OBJECT_END_TOKEN)
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
@@ -214,14 +217,109 @@ def sample_from_map(
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio
 
+def round_str(string, n=3):
+  """Rounds a string-represented number to n decimal places"""
+  return '{:f}'.format(round(Decimal(string), n).normalize())
+
+def format_time_points(time_points):
+  """
+  Takes only necessary info from time points, truncates rounds long decimals,
+  and splits into inhereted and uninhereted time points.
+  """
+  new_time_points = []
+  slider_changes = []
+  last_entry_type = None
+  for tp in time_points:
+    tp_data = tp.split(',')
+    inhereted = not int(tp_data[6]) if len(tp_data) > 6 else False
+    beat_len_str = round_str(tp_data[1])
+    if inhereted:
+      # Check if this slider change is just repeat data, and skip if so
+      repeat = \
+        last_entry_type == 'slider_change' \
+        and slider_changes[-1].split(',')[1] == beat_len_str
+
+      repeat = repeat or (
+        last_entry_type == 'time_point' \
+        and beat_len_str == '-100')
+
+      if not repeat:
+        slider_changes.append(f'{round_str(tp_data[0])},{beat_len_str}')
+        last_entry_type = 'slider_change'
+    else:
+      new_time_points.append(f'{round_str(tp_data[0])},{beat_len_str},{tp_data[2]}')
+      last_entry_type = 'time_point'
+
+  return new_time_points, slider_changes
+
+def get_time_points_in_range(time_points, hit_objects, slider_changes=None):
+  """
+  Returns a list of time points and slider changes that are in the range of the hit objects.
+  """
+  slider_changes = slider_changes or []
+  if hit_objects[0] == HIT_OBJECT_START_TOKEN:
+    start_time = 0
+  else:
+    start_time = int(hit_objects[0].split(',')[2]) # ERROR
+
+  if hit_objects[-1] == HIT_OBJECT_END_TOKEN:
+    end_time = 9999999
+  else:    
+    end_time = int(hit_objects[-1].split(',')[2])
+
+  selected_time_points = []
+  for tp in reversed(time_points):
+    tp_time = float(tp.split(',')[0]) # ERROR
+    if tp_time > end_time:
+      continue
+    selected_time_points.append(tp)
+    if tp_time <= start_time:
+      break
+  selected_time_points = selected_time_points[::-1]
+  first_time_step = float(selected_time_points[0].split(',')[0])
+
+  selected_slider_changes = []
+  for sc in slider_changes:
+    sc_time = float(sc.split(',')[0])
+    if sc_time >= first_time_step:
+      if sc_time <= end_time:
+        selected_slider_changes.append(sc)
+      else:
+        break
+
+  return selected_time_points, selected_slider_changes
+
+def format_hit_objects(hit_objects):
+  """
+  Takes only necessary info from hit objects.
+  """
+  new_hit_objects = []
+  for ho in hit_objects:
+    if ho.startswith('<'):
+      new_hit_objects.append(ho)
+    else:
+      ho_data = ho.split(',')
+      # TODO: Bring back extra params and sliders
+      new_hit_objects.append(','.join(ho_data[:4] + ['0']))
+  return new_hit_objects
+
 def format_training_data(metadata, time_points, hit_objects, audio_data):
   prior_str = '<Metadata>'
   for key, value in metadata.items():
     prior_str += f'<{key}>{value}'
 
+  f_time_points, slider_changes = format_time_points(time_points)
+  f_time_points, slider_changes = get_time_points_in_range(
+    f_time_points, hit_objects, slider_changes)
+
   prior_str += '<TimePoints>'
-  for tp in time_points:
+  for tp in f_time_points:
     prior_str += f'<TimePointSplit>{tp}'
+
+  if len(slider_changes) > 0:
+    prior_str += '<SliderChanges>'
+    for sc in slider_changes:
+      prior_str += f'<SliderChange>{sc}'
 
   if audio_data:
     prior_str += '<Audio>'
@@ -229,12 +327,16 @@ def format_training_data(metadata, time_points, hit_objects, audio_data):
       prior_str += f'<AudioSplit>{audio}'
 
   pred_str = ''
-  for ho in hit_objects:
+  f_hit_objects = format_hit_objects(hit_objects)
+  for ho in f_hit_objects:
     if ho in ['<s>', '</s>']:
       pred_str += ho
     else:
       pred_str += f'<HitObject>{ho}'
-
+  # print('='*100)
+  # print(prior_str)
+  # print('-'*50)
+  # print(pred_str)
   return prior_str, pred_str
 
 
