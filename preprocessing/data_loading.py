@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
+from utils import load_config
 
 VERSION_PATTERN = r'osu file format v(\d+)(?://.*)?$'
 METADATA_ENTRY_PATTERN = r'^([a-zA-Z]+):(.+?)(?://.*)?$'
@@ -399,8 +400,8 @@ if __name__ == '__main__':
   # dataset = OsuDataset('../data/formatted_beatmaps/')
   # print(len(dataset))
   # print(dataset[5])
-
-  train_loader, val_loader, test_loader = get_dataloaders('../data/formatted_beatmaps/', batch_size=2)
+  config = load_config()
+  train_loader, val_loader, test_loader = get_dataloaders(config, '../data/formatted_beatmaps/', batch_size=2)
   print(len(train_loader))
   full_data = next(iter(train_loader))
   print(full_data)

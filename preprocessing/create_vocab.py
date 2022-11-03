@@ -22,7 +22,7 @@ def create_default_vocab(args, config):
   print('Creating vocab with default tokenizer')
   from text_processing import tokenize
 
-  train_loader = get_dataloaders(
+  train_loader = get_dataloaders(config, 
     config['beatmap_path'], batch_size=config.get('batch_size'))[0]
 
   token_counts = Counter()
@@ -47,7 +47,7 @@ def create_default_vocab(args, config):
 def create_sentencepiece_model(args, config):
   print('Creating vocab with sentencepiece')
 
-  train_loader = get_dataloaders(
+  train_loader = get_dataloaders(config, 
     config['beatmap_path'], batch_size=config.get('batch_size'))[0]
 
   vocab_size = config['spm_vocab_size']
