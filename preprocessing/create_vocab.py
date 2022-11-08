@@ -1,5 +1,3 @@
-# from text_processing import TOKENIZER, tokenizer
-import argparse
 import os
 import sys
 from typing import Counter
@@ -8,19 +6,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import torch
 import torchtext as tt
 
-from utils import load_config
+from utils import load_config, parse_args
 from preprocessing.data_loading import get_dataloaders, sample_from_map
 from preprocessing.data_loading import format_training_data
-
-
-# Create arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--early_stop', type=int, default=-1)
+from text_processing import get_tokenizer
 
 
 def create_default_vocab(args, config):
   print('Creating vocab with default tokenizer')
-  from text_processing import tokenize
+  tokenize = get_tokenizer(config)
 
   train_loader = get_dataloaders(
     config['beatmap_path'], batch_size=config.get('batch_size'))[0]
@@ -72,8 +66,8 @@ def create_sentencepiece_model(args, config):
 
 
 if __name__ == '__main__':
-  args = parser.parse_args()
-  config = load_config()
+  args = parse_args()
+  config = load_config(args.config)
   if config.get('tokenizer_type') == 'sentencepiece':
     create_sentencepiece_model(args, config)
   else:

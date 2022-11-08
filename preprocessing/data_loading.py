@@ -304,7 +304,7 @@ def format_hit_objects(hit_objects):
     else:
       ho_data = ho.split(',')
       # TODO: Bring back extra params and sliders
-      new_hit_objects.append(','.join(ho_data[:4] + ['0']))
+      new_hit_objects.append(','.join(ho_data[:3] + ['1', '0']))
   return new_hit_objects
 
 def format_training_data(metadata, time_points, hit_objects, audio_data):
