@@ -1,0 +1,35 @@
+device: 'cuda'
+
+# Logging
+use_wandb: True
+wandb_project: 'osu!-ai'
+
+# Constants
+beatmap_path: 'data/formatted_beatmaps/'
+vocab_dir: 'preprocessing/vocab/'
+model_save_path: 'models/default_model.pt'
+output_dir: 'output/'
+
+# Preprocessing
+tokenizer_type: default # sentencepiece
+spm_vocab_size: 1000 # Only used if using sentencepiece
+
+# Model
+d_model: 128
+d_hid: 128
+n_head: 8
+n_encoder_layers: 4
+n_decoder_layers: 4
+
+max_src_len: 512
+max_tgt_len: 1024
+max_gen_len: 1024 # Max length for post-training generation
+
+load_model: True
+
+# Training
+lr: 0.0003
+epochs: 10
+batch_size: 8
+dropout: 0
+eval_freq: 30000 # In number of samples
