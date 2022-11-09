@@ -23,7 +23,7 @@ def create_default_vocab(args, config):
   from text_processing import tokenize
 
   train_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'))[0]
+    config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))[0]
 
   token_counts = Counter()
   for batch_idx, batch in enumerate(train_loader):
@@ -48,7 +48,7 @@ def create_sentencepiece_model(args, config):
   print('Creating vocab with sentencepiece')
 
   train_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'))[0]
+    config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))[0]
 
   vocab_size = config['spm_vocab_size']
   tmp_file = 'vocab_train.txt'
