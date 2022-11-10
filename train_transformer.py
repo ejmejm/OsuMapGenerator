@@ -30,19 +30,41 @@ def eval(model, data_loader, preprocess_text, config):
   losses = []
   model.eval()
   for batch in tqdm(data_loader):
-    batch_samples = [sample_from_map(*map) for map in batch]
-    training_samples = [format_training_data(*map) for map in batch_samples]
+    if not config.get('use_vqvae'):
+      batch_samples = [sample_from_map(*map) for map in batch]
+      training_samples = [format_training_data(*map) for map in batch_samples]
 
-    src, tgt = zip(*training_samples)
-    src_tensor, tgt_tensor, src_mask, tgt_mask = prepare_tensor_seqs(src, tgt, preprocess_text, config)
-    target = tgt_tensor[1:]
-    tgt_tensor = tgt_tensor[:-1]
-    tgt_mask = tgt_mask[:-1, :-1]
+      src, tgt = zip(*training_samples)
+      # Convert text to numerical tensors with padding and corresponding masks
+      src_tensor, tgt_tensor, src_mask, tgt_mask = \
+        prepare_tensor_seqs(src, tgt, preprocess_text, config)
+      # Split the tgt tensor into the input and actual target
+      target = tgt_tensor[1:]
+      tgt_tensor = tgt_tensor[:-1]
+      tgt_mask = tgt_mask[:-1, :-1]
 
-    with torch.no_grad():
+      # Pass the data through the model
       output = model(src_tensor, tgt_tensor, src_mask, tgt_mask)
-    output = rearrange(output, 's b d -> b d s')
-    target = rearrange(target, 's b -> b s')
+      # Rearrange data to be batch first
+      output = rearrange(output, 's b d -> b d s')
+      target = rearrange(target, 's b -> b s')
+    else:
+      # why not processing these things in the dataset?
+      batch_samples = [sample_tokensets_from_map(*map) for map in batch]
+      training_samples = [format_metadata(*map) for map in batch_samples]
+
+      meta, tokens, audio = zip(*training_samples)
+      # Convert text to numerical tensors with padding and corresponding masks
+      src_tensor, tgt_tensor, src_mask, tgt_mask = \
+        prepare_tensor_transformer(meta, audio, tokens, preprocess_text, config)
+      # Split the tgt tensor into the input and actual target
+      target = tgt_tensor[:, 1:]
+      tgt_tensor = tgt_tensor[:, :-1]
+
+      output = model(src_tensor, tgt_tensor)
+
+      output = output.view(-1, output.shape[-1]).clone()
+      target = target.contiguous().view(-1).clone()
 
     with torch.no_grad():
       loss = F.cross_entropy(output, target)

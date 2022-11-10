@@ -41,17 +41,16 @@ def build_model(input_size, enc_channels, dec_channels, config):
 def eval(encoder, decoder, quantizer, data_loader, preprocess_text, config):
   losses = []
   for batch in tqdm(data_loader):
-    batch_samples = [sample_hitobjects(*map) for map in batch]
-    training_samples = [format_training_data(*map) for map in batch_samples]
-
-    src, tgt = zip(*training_samples)
-    src_tensor, tgt_tensor, src_mask, tgt_mask = prepare_tensor_seqs(src, tgt, preprocess_text, config)
-    target = tgt_tensor[1:]
-    tgt_tensor = tgt_tensor[:-1]
-    tgt_mask = tgt_mask[:-1, :-1]
+    hitobjects = [obj[1] for obj in batch]
+    batch_samples = [sample_hitobjects(obj) for obj in hitobjects]
+    src_tensor.detach().to(config['device']).float()
+    # src = training_samples
+    src_tensor = prepare_tensor_vqvae(batch_samples, preprocess_text, config)
+    tgt_tensor = src_tensor
+    target = tgt_tensor
 
     with torch.no_grad():
-      pre_latents = encoder(src_tensor[..., :-4])
+      pre_latents = encoder(src_tensor[..., :-2])
       embedding_loss, vq_latents, _, perplexity = quantizer(pre_latents)
       output = decoder(vq_latents)
     output = rearrange(output, 's b d -> b d s')
