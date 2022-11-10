@@ -92,9 +92,10 @@ def prepare_tensor_seqs(src, tgt, preprocess_text, config):
 
 
 # The type of tokenizer depends on the config settings
-config = load_config()
-if config.get('tokenizer_type') == 'sentencepiece':
-  tokenize = None
-  raise Exception('Sentencepiece tokenizer not implemented yet')
-else:
-  tokenize = default_tokenize
+def get_tokenizer(config):
+  if config.get('tokenizer_type') == 'sentencepiece':
+    tokenize = None
+    raise Exception('Sentencepiece tokenizer not implemented yet')
+  else:
+    tokenize = default_tokenize
+  return tokenize

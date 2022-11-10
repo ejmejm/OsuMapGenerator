@@ -1,7 +1,3 @@
-import argparse
-import os
-
-from clearml import Task
 from einops import rearrange
 import numpy as np
 import torch
@@ -9,15 +5,11 @@ from torch import nn
 from torch.nn import functional as F
 from tqdm import tqdm
 
-from models import DefaultTransformer, model_from_config
+from models import model_from_config
 from preprocessing.data_loading import get_dataloaders, sample_from_map
 from preprocessing.data_loading import format_training_data
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
-from utils import load_config, log
-
-# Create arguments
-parser = argparse.ArgumentParser()
-# parser.add_argument('--batch_size', type=int, default=32)
+from utils import load_config, log, parse_args
 
 
 BEATMAP_PATH = 'data/formatted_beatmaps/'
@@ -28,7 +20,7 @@ def eval(model, data_loader, preprocess_text, config):
   losses = []
   model.eval()
   for batch in tqdm(data_loader):
-    batch_samples = [sample_from_map(*map) for map in batch]
+    batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
     training_samples = [format_training_data(*map) for map in batch_samples]
 
     src, tgt = zip(*training_samples)
@@ -102,8 +94,8 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
 
 if __name__ == '__main__':
   # Load args and config
-  args = parser.parse_args()
-  config = load_config()
+  args = parse_args()
+  config = load_config(args.config)
 
   if config['use_wandb']:
     import wandb
