@@ -42,10 +42,12 @@ class VQEncoder(nn.Module):
                 ResBlock(channels[i]),
             ]
         self.main = nn.Sequential(*layers)
+        # self.src_word_emb = nn.Embedding(2048, 512)
         # self.out_net = nn.Linear(output_size, output_size)
         self.main.apply(init_weight)
 
     def forward(self, inputs):
+        # inputs = self.src_word_emb(inputs)
         inputs = inputs.permute(0, 2, 1)
         outputs = self.main(inputs).permute(0, 2, 1)
         # print(outputs.shape)

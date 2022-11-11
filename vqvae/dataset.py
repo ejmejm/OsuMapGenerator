@@ -262,8 +262,19 @@ def load_token_data(path):
 
 def sample_hitobjects(hit_objects,
     n_hit_objects=8):
-
-  start_idx = np.random.randint(0, max(1, len(hit_objects) - n_hit_objects))
-  selected_hit_objects = hit_objects[start_idx:start_idx + n_hit_objects]
+  modified_hit_objects = []
+  last_time = 0
+  for hit_obj in hit_objects:
+    s_arr = hit_obj.split(',')
+    t = int(s_arr[2])
+    if (t - last_time) >= 10000:
+      last_time = t
+      continue
+    s_arr[2] = str(t - last_time)
+    modified_hit_objects.append(','.join(s_arr))
+    last_time = t
+  
+  start_idx = np.random.randint(0, max(1, len(modified_hit_objects) - n_hit_objects))
+  selected_hit_objects = modified_hit_objects[start_idx:start_idx + n_hit_objects]
 
   return selected_hit_objects

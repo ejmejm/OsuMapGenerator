@@ -15,9 +15,10 @@ from vqvae.dataset import get_vqvae_dataloaders, sample_hitobjects
 from preprocessing.data_loading import format_training_data
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
 from vqvae.tools import prepare_tensor_vqvae
-from utils import load_config
+from utils import load_config, parse_args, log
 from vqvae.vqvae_model import VQEncoder, VQDecoder, Quantizer
 import codecs as cs
+
 # Create arguments
 parser = argparse.ArgumentParser()
 # parser.add_argument('--batch_size', type=int, default=32)
@@ -43,32 +44,36 @@ def eval(encoder, decoder, quantizer, data_loader, preprocess_text, config):
   for batch in tqdm(data_loader):
     hitobjects = [obj[1] for obj in batch]
     batch_samples = [sample_hitobjects(obj) for obj in hitobjects]
-    src_tensor.detach().to(config['device']).float()
     # src = training_samples
     src_tensor = prepare_tensor_vqvae(batch_samples, preprocess_text, config)
-    tgt_tensor = src_tensor
-    target = tgt_tensor
-
+    src_tensor = src_tensor.detach().to(config['device']).float()
+    target = src_tensor
     with torch.no_grad():
       pre_latents = encoder(src_tensor[..., :-2])
       embedding_loss, vq_latents, _, perplexity = quantizer(pre_latents)
       output = decoder(vq_latents)
-    output = rearrange(output, 's b d -> b d s')
-    target = rearrange(target, 's b -> b s')
-
-    with torch.no_grad():
       rec_loss = F.l1_loss(output, target)
       loss = F.cross_entropy(output, target)
       loss += loss + rec_loss + embedding_loss
-    losses.append(loss.item())
+      losses.append(loss.item())
 
   return losses
   
 
 def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, val_loader=None):
+
+  encoder.to(config['device'])
+  quantizer.to(config['device'])
+  decoder.to(config['device'])
+
   opt_vq_encoder = torch.optim.Adam(encoder.parameters(), lr=config['lr'])
   opt_quantizer = torch.optim.Adam(quantizer.parameters(), lr=config['lr'])
   opt_vq_decoder = torch.optim.Adam(decoder.parameters(), lr=config['lr'])
+
+  opt_vq_encoder_lr = torch.optim.lr_scheduler.ExponentialLR(opt_vq_encoder, gamma=0.98)
+  opt_quantizer_lr = torch.optim.lr_scheduler.ExponentialLR(opt_quantizer, gamma=0.98)
+  opt_vq_decoder_lr = torch.optim.lr_scheduler.ExponentialLR(opt_vq_decoder, gamma=0.98)
+        
   
   last_eval = 0
   curr_idx = 0
@@ -82,13 +87,12 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
 
       # src = training_samples
       src_tensor = prepare_tensor_vqvae(batch_samples, preprocess_text, config)
-      tgt_tensor = src_tensor
-      target = tgt_tensor
 
       encoder.train()
       decoder.train()
       quantizer.train()
-      src_tensor.detach().to(config['device']).float()
+      src_tensor = src_tensor.detach().to(config['device']).float()
+      target = src_tensor
       pre_latents = encoder(src_tensor[..., :-2])
       embedding_loss, vq_latents, _, perplexity = quantizer(pre_latents)
       output = decoder(vq_latents)
@@ -98,11 +102,12 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
 
       rec_loss = F.l1_loss(output, target)
       loss = F.cross_entropy(output, target)
-      loss += config.get('lambda_adv') * loss + rec_loss + embedding_loss
+      loss += rec_loss + embedding_loss
 
       losses.append(loss.item())
       pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item():.3f}')
-      
+      log({'epoch': epoch_idx, 'train_loss': losses[-1]}, config)
+
       opt_vq_encoder.zero_grad()
       opt_quantizer.zero_grad()
       opt_vq_decoder.zero_grad()
@@ -118,9 +123,15 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
         last_eval = curr_idx
         eval_losses = eval(encoder, decoder, quantizer, val_loader, preprocess_text, config)
         print(f'Epoch {epoch_idx} | Sample #{curr_idx} | Eval loss: {np.mean(eval_losses):.3f}')
+        log({'epoch': epoch_idx, 'eval_loss': np.mean(eval_losses)}, config)
 
         if 'model_save_path' in config:
           save(encoder, decoder, quantizer, config)
+
+    if epoch_idx % config['lr_scheduler_e']:
+      opt_vq_encoder_lr.step()
+      opt_quantizer_lr.step()
+      opt_vq_decoder_lr.step()
 
   return losses
 
@@ -165,18 +176,20 @@ def save(encoder, decoder, quantizer, config):
 
 if __name__ == '__main__':
   # Load args and config
-  args = parser.parse_args()
-  config = load_config()
-  
+  args = parse_args()
+  config = load_config(args.config)
+  if config['use_wandb']:
+    import wandb
+    wandb.init(project=config['wandb_project'], config=config)
   # Get data loaders
   train_loader, val_loader, test_loader = get_vqvae_dataloaders(
     config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))
   preprocess_text, vocab = get_text_preprocessor(config)
   
-  enc_channels = [1024, config.get('dim_vq_latent')]
-  dec_channels = [config.get('dim_vq_latent'), 1024, config.get('max_src_len')]
+  enc_channels = [256, config.get('dim_vq_latent')]
+  dec_channels = [config.get('dim_vq_latent'), 256, config.get('input_size')]
   # Create the model and load when applicable
-  encoder, decoder, quantizer = build_model(config.get('max_src_len'), enc_channels, dec_channels, config)
+  encoder, decoder, quantizer = build_model(config.get('input_size'), enc_channels, dec_channels, config)
 
   # Train the model
   losses = train(encoder, decoder, quantizer, train_loader, preprocess_text, config, val_loader=val_loader)

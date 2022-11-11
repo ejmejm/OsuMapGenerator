@@ -103,6 +103,26 @@ def load_beatmap_data(path):
 
   return metadata, timing_points, hit_objects
 
+def filterV14(root_dir):
+  map_dir = os.path.join(root_dir, 'maps')
+  mapping = pd.read_csv(
+    os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
+  mapping = mapping.to_dict()['song']
+  map_list = list(mapping.keys())
+  map_ids = []
+  for map_id in map_list:
+    p = os.path.join(map_dir, map_id)
+    with open(p, 'r', encoding='utf8') as f:
+      data = f.read()
+
+    lines = data.split('\n')
+    # Get the osu file format version
+    result = re.search(VERSION_PATTERN, lines[0])
+    groups = result.groups() if result else tuple([None])
+    if groups[0] == '14':
+      map_ids.append(map_id)
+  return map_ids
+
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
   def __init__(self, root_dir, include_audio=True, map_ids=None):

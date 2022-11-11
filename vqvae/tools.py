@@ -8,6 +8,14 @@ import torchtext as tt
 
 from models import gen_seq_mask
 from utils import load_config
+import numpy as np
+
+def get_one_hot(value, cate_num):
+  classes_to_generate = int(value)
+  one_hot = np.zeros(cate_num, dtype=np.float32)
+  one_hot[classes_to_generate] = 1
+
+  return one_hot
 
 def prepare_tensor_vqvae(src, preprocess_text, config):
   """Converts to tensor, pads, and send to device.
@@ -21,21 +29,44 @@ def prepare_tensor_vqvae(src, preprocess_text, config):
   # after the first version, we can add other attributes
   def process(hitobject):
     s_arr = hitobject.split(',')
-    return [int(s_arr[0]), int(s_arr[1]), int(s_arr[2]), int(s_arr[3]), int(s_arr[4])]
+    return [float(s_arr[0])/2048, float(s_arr[1])/2048, float(s_arr[2])/100000, float(s_arr[3])/1024, float(s_arr[4])/1024]
+    # return [float(s_arr[0]), float(s_arr[1]), float(s_arr[2]), float(s_arr[3]), float(s_arr[4])]
+  src_processed = []
+  for s in src:
+    line = []
+    last_time = 0
+    for obj in s:
+      s_arr = obj.split(',')
+      # # we use 640 and 480 because osu runs in 640*480 revolution.
+      # x_onehot = get_one_hot(int(s_arr[0])/10, 64)
+      # y_onehot = get_one_hot(int(s_arr[1])/10, 48)
+      # # just use 10000ms right now
+      # time_onehot = get_one_hot((int(s_arr[2]) - last_time)/100, 100)
+      # # only 8 types
+      # type_onehot = get_one_hot(int(s_arr[3]), 256)
+      # # only 4 types of hit sound
+      # hit_sound_onehot = get_one_hot(int(s_arr[4]), 20)
+      # last_time = int(s_arr[2])
+      
+      # line.append(np.concatenate((x_onehot, y_onehot, time_onehot, type_onehot, hit_sound_onehot), axis=0))
 
-  src = [[process(obj) for obj in s] for s in src]
+      line.append([int(s_arr[0])/640, int(s_arr[1])/480, int(s_arr[2])/10000, int(s_arr[3])/256, int(s_arr[4])/20])
+    src_processed.append(line)
 
-  max_src_len = config['max_src_len']
+  src = src_processed
+  # src = [[process(obj) for obj in s] for s in src]
 
-  PAD_TOKEN = 9999999
+  max_src_len = config['input_size']
+
+  PAD_TOKEN = -1
 
   src_tensors = []
   for s in src:
     one_tensor = []
     for obj in s:
       oneline = torch.tensor(obj[:max_src_len], dtype=torch.float)
-      pad_len = max_src_len - len(oneline)
-      oneline = F.pad(oneline, (0, pad_len), value=PAD_TOKEN)
+      # pad_len = max_src_len - len(oneline)
+      # oneline = F.pad(oneline, (0, pad_len), value=PAD_TOKEN)
       one_tensor.append(oneline)
     
     src_tensors.append(torch.stack(one_tensor))

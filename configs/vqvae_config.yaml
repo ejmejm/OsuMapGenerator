@@ -1,0 +1,78 @@
+device: 'cuda:0'
+
+# Logging
+use_wandb: True
+wandb_project: 'osu!-ai'
+
+# Constants
+beatmap_path: 'data/formatted_beatmaps/'
+vocab_dir: 'preprocessing/vocab/'
+model_save_path: 'models/test_model.pt'
+output_dir: 'output/'
+
+# Preprocessing
+tokenizer_type: default # sentencepiece
+spm_vocab_size: 1000 # Only used if using sentencepiece
+
+# Model
+d_model: 128
+d_hid: 512
+n_head: 8
+n_encoder_layers: 4
+n_decoder_layers: 8
+
+max_src_len: 512
+max_tgt_len: 1024
+max_gen_len: 1024 # Max length for post-training generation
+
+# Logging
+use_wandb: True
+wandb_project: 'osu!-ai'
+
+# Constants
+beatmap_path: 'data/formatted_beatmaps/'
+vocab_dir: 'preprocessing/vocab/'
+model_save_path: 'models/large_model.pt'
+output_dir: 'output/'
+
+# Preprocessing
+tokenizer_type: default # sentencepiece
+spm_vocab_size: 1000 # Only used if using sentencepiece
+
+# Model
+d_model: 512
+d_hid: 2048
+n_head: 8
+n_encoder_layers: 6
+n_decoder_layers: 6
+
+max_src_len: 512
+max_tgt_len: 1024
+max_gen_len: 1024 # Max length for post-training generation
+
+load_model: False
+
+# Training
+lr: 0.001
+epochs: 1000
+batch_size: 128
+dropout: 0
+eval_freq: 30000 # In number of samples
+
+use_vqvae: True
+n_down: 2
+n_resblk: 3
+codebook_size: 1024
+dim_vq_latent: 1024
+lambda_beta: 1
+
+val_split: 0.1
+test_split: 0.6
+
+token_save_path: 'gen/tokens'
+lambda_adv: 0.2
+
+d_k: 64
+d_v: 64
+input_size: 5
+lr_scheduler_e: 10
