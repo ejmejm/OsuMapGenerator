@@ -147,18 +147,23 @@ def get_dataloaders(config, root_dir, batch_size=1, include_audio=True,
 
   return train_loader, val_loader, test_loader
 
-def sample_tokensets_from_map(
-    metadata, time_points, tokens, audio_data,
-    n_tokens=10, audio_secs=5, target_metadata=DEFAULT_METADATA):
-
+def sample_tokensets_from_map(config, 
+    metadata, time_points, tokens, audio_data, audio_secs=5, target_metadata=DEFAULT_METADATA):
+  n_tokens = config['token_length']
   selected_metadata = {}
   for key in target_metadata:
     value = metadata.get(key)
     if value is not None:
       selected_metadata[key] = value
 
-  start_idx = np.random.randint(0, max(1, len(tokens) - n_tokens))
-  selected_tokens = tokens[start_idx:start_idx + n_tokens]
+  # set config['codebook_size'] as begin token
+  # set config['codebook_size'] + 1 as end token
+  # set config['codebook_size'] + 2 as pad token
+  if (len(tokens) > n_tokens):
+    start_idx = np.random.randint(0, max(1, len(tokens) - n_tokens))
+    selected_tokens = [config['codebook_size']] + tokens[start_idx:start_idx + n_tokens] + [config['codebook_size'] + 1]
+  else:
+    selected_tokens = [config['codebook_size']] + tokens + [config['codebook_size'] + 1] + [config['codebook_size'] + 2] * (n_tokens - len(tokens))
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
@@ -260,8 +265,7 @@ def load_token_data(path):
 
   return tokens
 
-def sample_hitobjects(hit_objects,
-    n_hit_objects=8):
+def modify_timediff(hit_objects):
   modified_hit_objects = []
   last_time = 0
   for hit_obj in hit_objects:
@@ -273,6 +277,11 @@ def sample_hitobjects(hit_objects,
     s_arr[2] = str(t - last_time)
     modified_hit_objects.append(','.join(s_arr))
     last_time = t
+  return modified_hit_objects
+
+def sample_hitobjects(hit_objects,
+    n_hit_objects=8):
+  modified_hit_objects = modify_timediff(hit_objects)
   
   start_idx = np.random.randint(0, max(1, len(modified_hit_objects) - n_hit_objects))
   selected_hit_objects = modified_hit_objects[start_idx:start_idx + n_hit_objects]

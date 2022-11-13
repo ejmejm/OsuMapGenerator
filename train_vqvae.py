@@ -11,7 +11,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 
 from models import DefaultTransformer
-from vqvae.dataset import get_vqvae_dataloaders, sample_hitobjects
+from vqvae.dataset import get_vqvae_dataloaders, sample_hitobjects, modify_timediff
 from preprocessing.data_loading import format_training_data
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
 from vqvae.tools import prepare_tensor_vqvae
@@ -28,12 +28,12 @@ BEATMAP_PATH = 'data/formatted_beatmaps/'
 
 
 def build_model(input_size, enc_channels, dec_channels, config):
-  vq_encoder = VQEncoder(input_size - 2, enc_channels, config["n_down"])
+  vq_encoder = VQEncoder(input_size - 1, enc_channels, config["n_down"])
   vq_decoder = VQDecoder(config['dim_vq_latent'], dec_channels, config['n_resblk'], config["n_down"])
   quantizer = Quantizer(config['codebook_size'], config['dim_vq_latent'], config['lambda_beta'])
 
-  if config['load_model'] and os.path.exists(config['model_save_path']):
-    checkpoint = torch.load(config['model_save_path'])
+  if config['load_model'] and os.path.exists(config['model_vqvae_save_path']):
+    checkpoint = torch.load(config['model_vqvae_save_path'])
     vq_encoder.load_state_dict(checkpoint['vq_encoder'])
     vq_decoder.load_state_dict(checkpoint['vq_decoder'])
     quantizer.load_state_dict(checkpoint['quantizer'])
@@ -49,12 +49,12 @@ def eval(encoder, decoder, quantizer, data_loader, preprocess_text, config):
     src_tensor = src_tensor.detach().to(config['device']).float()
     target = src_tensor
     with torch.no_grad():
-      pre_latents = encoder(src_tensor[..., :-2])
+      pre_latents = encoder(src_tensor[..., :-1])
       embedding_loss, vq_latents, _, perplexity = quantizer(pre_latents)
       output = decoder(vq_latents)
       rec_loss = F.l1_loss(output, target)
-      loss = F.cross_entropy(output, target)
-      loss += loss + rec_loss + embedding_loss
+      # loss = F.cross_entropy(output, target)
+      loss = rec_loss + embedding_loss
       losses.append(loss.item())
 
   return losses
@@ -93,7 +93,7 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
       quantizer.train()
       src_tensor = src_tensor.detach().to(config['device']).float()
       target = src_tensor
-      pre_latents = encoder(src_tensor[..., :-2])
+      pre_latents = encoder(src_tensor[..., :-1])
       embedding_loss, vq_latents, _, perplexity = quantizer(pre_latents)
       output = decoder(vq_latents)
       
@@ -101,8 +101,8 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
     #   target = rearrange(target, 's b -> b s')
 
       rec_loss = F.l1_loss(output, target)
-      loss = F.cross_entropy(output, target)
-      loss += rec_loss + embedding_loss
+      # loss = F.cross_entropy(output, target)
+      loss = rec_loss + embedding_loss
 
       losses.append(loss.item())
       pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item():.3f}')
@@ -125,10 +125,10 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
         print(f'Epoch {epoch_idx} | Sample #{curr_idx} | Eval loss: {np.mean(eval_losses):.3f}')
         log({'epoch': epoch_idx, 'eval_loss': np.mean(eval_losses)}, config)
 
-        if 'model_save_path' in config:
+        if 'model_vqvae_save_path' in config:
           save(encoder, decoder, quantizer, config)
 
-    if epoch_idx % config['lr_scheduler_e']:
+    if epoch_idx % config['lr_scheduler_e'] == 0:
       opt_vq_encoder_lr.step()
       opt_quantizer_lr.step()
       opt_vq_decoder_lr.step()
@@ -138,20 +138,17 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
 def tokenize(encoder, quantizer, dataloader, preprocess_text, config):
   for batch in (pbar := tqdm(dataloader)):
     hitobjects = [obj[1] for obj in batch]
-    batch_samples = [sample_hitobjects(obj) for obj in hitobjects]
+    batch_samples = [modify_timediff(obj) for obj in hitobjects]
     # training_samples  = [format_training_data(None, None, obj, None)[1] for obj in batch_samples]
 
     # src = training_samples
     src_tensor = prepare_tensor_vqvae(batch_samples, preprocess_text, config)
-    tgt_tensor = src_tensor
-    target = tgt_tensor
 
-    encoder.train()
-    decoder.train()
-    quantizer.train()
-    src_tensor.detach().to(config['device']).float()
-
-    pre_latents = encoder(src_tensor[..., :-2])
+    encoder.eval()
+    decoder.eval()
+    quantizer.eval()
+    src_tensor = src_tensor.detach().to(config['device']).float()
+    pre_latents = encoder(src_tensor[..., :-1])
     indices = quantizer.map2index(pre_latents)
     indices = list(indices.cpu().numpy())
     indices = [str(token) for token in indices]
@@ -172,7 +169,7 @@ def save(encoder, decoder, quantizer, config):
     'quantizer': quantizer.state_dict(),
     'vq_decoder': decoder.state_dict()
   }
-  torch.save(state, config['model_save_path'])
+  torch.save(state, config['model_vqvae_save_path'])
 
 if __name__ == '__main__':
   # Load args and config
@@ -195,7 +192,7 @@ if __name__ == '__main__':
   losses = train(encoder, decoder, quantizer, train_loader, preprocess_text, config, val_loader=val_loader)
 
   # Save the final model
-  if 'model_save_path' in config:
+  if 'model_vqvae_save_path' in config:
     save(encoder, decoder, quantizer, config)
   print('Model saved!')
 

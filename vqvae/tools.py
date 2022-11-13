@@ -49,8 +49,13 @@ def prepare_tensor_vqvae(src, preprocess_text, config):
       # last_time = int(s_arr[2])
       
       # line.append(np.concatenate((x_onehot, y_onehot, time_onehot, type_onehot, hit_sound_onehot), axis=0))
-
-      line.append([int(s_arr[0])/640, int(s_arr[1])/480, int(s_arr[2])/10000, int(s_arr[3])/256, int(s_arr[4])/20])
+      x = int(int(s_arr[0])/10)/64
+      y = int(int(s_arr[0])/10)/48
+      t = int(int(s_arr[2])/10)/1000
+      type = int(s_arr[3])/256
+      hs = int(s_arr[4])/20
+      line.append([x, y, t, type, hs])
+      # line.append([int(s_arr[0])/640, int(s_arr[1])/480, int(s_arr[2])/10000])
     src_processed.append(line)
 
   src = src_processed
@@ -86,7 +91,7 @@ def prepare_tensor_transformer(meta, audio, tokens, preprocess_text, config):
   src_tensor, src_mask = prepare_tensor_input(
     meta, config['max_src_len'], config['max_src_len'], preprocess_text, config)
   
-  token_tensor = torch.tensor(tokens)
+  token_tensor = torch.tensor(tokens).to(config['device'])
   tgt_mask = gen_seq_mask(len(tokens[0])).to(config['device'])
   
   return src_tensor, token_tensor, src_mask, tgt_mask

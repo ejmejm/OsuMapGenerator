@@ -14,7 +14,7 @@ from vqvae.dataset import get_dataloaders
 from preprocessing.data_loading import format_training_data, sample_from_map
 from vqvae.dataset import sample_tokensets_from_map, format_metadata
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
-from utils import load_config, log
+from utils import load_config, log, parse_args
 from vqvae.tools import prepare_tensor_transformer
 
 # Create arguments
@@ -50,7 +50,7 @@ def eval(model, data_loader, preprocess_text, config):
       target = rearrange(target, 's b -> b s')
     else:
       # why not processing these things in the dataset?
-      batch_samples = [sample_tokensets_from_map(*map) for map in batch]
+      batch_samples = [sample_tokensets_from_map(config, *map) for map in batch]
       training_samples = [format_metadata(*map) for map in batch_samples]
 
       meta, tokens, audio = zip(*training_samples)
@@ -59,9 +59,9 @@ def eval(model, data_loader, preprocess_text, config):
         prepare_tensor_transformer(meta, audio, tokens, preprocess_text, config)
       # Split the tgt tensor into the input and actual target
       target = tgt_tensor[:, 1:]
-      tgt_tensor = tgt_tensor[:, :-1]
+      gt_tensor = tgt_tensor[:, :-1]
 
-      output = model(src_tensor, tgt_tensor)
+      output = model(src_tensor, gt_tensor)
 
       output = output.view(-1, output.shape[-1]).clone()
       target = target.contiguous().view(-1).clone()
@@ -76,8 +76,9 @@ def eval(model, data_loader, preprocess_text, config):
 def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
   last_eval = 0
   curr_idx = 0
-
+  model.to(config['device'])
   losses = []
+  opt_lr = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
   for epoch_idx in range(config['epochs']):
     for batch in (pbar := tqdm(train_loader)):
       model.train()
@@ -101,7 +102,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
         target = rearrange(target, 's b -> b s')
       else:
         # why not processing these things in the dataset?
-        batch_samples = [sample_tokensets_from_map(*map) for map in batch]
+        batch_samples = [sample_tokensets_from_map(config, *map) for map in batch]
         training_samples = [format_metadata(*map) for map in batch_samples]
 
         meta, tokens, audio = zip(*training_samples)
@@ -110,9 +111,9 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
           prepare_tensor_transformer(meta, audio, tokens, preprocess_text, config)
         # Split the tgt tensor into the input and actual target
         target = tgt_tensor[:, 1:]
-        tgt_tensor = tgt_tensor[:, :-1]
+        gt_tensor = tgt_tensor[:, :-1]
 
-        output = model(src_tensor, tgt_tensor)
+        output = model(src_tensor, gt_tensor)
 
         output = output.view(-1, output.shape[-1]).clone()
         target = target.contiguous().view(-1).clone()
@@ -137,14 +138,15 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
 
         if 'model_save_path' in config:
           torch.save(model.state_dict(), config['model_save_path'])
-
+      if epoch_idx % config['lr_scheduler_e'] == 0:
+        opt_lr.step()
   return losses
 
 
 if __name__ == '__main__':
   # Load args and config
-  args = parser.parse_args()
-  config = load_config()
+  args = parse_args()
+  config = load_config(args.config)
 
   if config['use_wandb']:
     import wandb
