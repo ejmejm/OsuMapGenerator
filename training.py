@@ -126,3 +126,8 @@ if __name__ == '__main__':
   if 'model_save_path' in config:
     torch.save(model.state_dict(), config['model_save_path'])
   print('Model saved!')
+
+  # Test the model
+  if test_loader is not None:
+    test_losses = eval(model, test_loader, preprocess_text, config)
+    print(f'Test loss: {np.mean(test_losses):.3f}')
