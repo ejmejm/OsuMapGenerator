@@ -16,6 +16,7 @@ TIMING_POINT_PATTERN = r'^([0-9,.-]+)(?://.*)?$'
 HIT_OBJECT_PATTERN = r'^(.+?)(?://.*)?$'
 HIT_OBJECT_START_TOKEN = '<Start>'
 HIT_OBJECT_END_TOKEN = '<End>'
+BREAK_TOKEN = '<Break>'
 
 
 DEFAULT_METADATA = set([
@@ -393,7 +394,56 @@ def convert_to_relative_time(hit_objects, time_points):
 
   return new_hit_objects
 
-def format_training_data(metadata, time_points, hit_objects, audio_data, relative_timing=False):
+def get_relative_time_beats(hit_object):
+  """
+  Gets the number of beats in a relative time string.
+  """
+  beats = float(hit_object[0])
+  if len(hit_object) <= 1 or hit_object[1] != ':':
+    return beats
+
+  for i in range(2, len(hit_object)):
+    beats += 1 / (2 ** (i - 1))
+  return beats
+
+def get_hit_object_time(hit_object, relative=False):
+  """When relative gets the number of beats, otherwise gets the time."""
+  if hit_object == HIT_OBJECT_START_TOKEN:
+    return 0
+  elif hit_object == HIT_OBJECT_END_TOKEN:
+    return -1
+  
+  time_str = hit_object.split(',')[2]
+  if relative:
+    return get_relative_time_beats(time_str)
+  return float(time_str)
+
+def add_hit_object_breaks(hit_objects, break_length):
+  """
+  Add breaks to hit objects when there are long delays with no hit objects.
+  Currently only works with relative time.
+  """
+  new_hit_objects = [hit_objects[0]]
+
+  for i in range(1, len(hit_objects)):
+    beats = get_hit_object_time(hit_objects[i], relative=True)
+    if beats > break_length:
+      # Add enough breaks to fill the gap
+      n_breaks = int(np.ceil((beats / break_length) - 1))
+      new_hit_objects.extend([BREAK_TOKEN for _ in range(n_breaks)])
+      new_beats = beats - n_breaks * break_length
+      time_str = format_time_diff(new_beats, 1)[0]
+
+      ho_data = hit_objects[i].split(',')
+      new_hit_objects.append(','.join(ho_data[:2] + [time_str] + ho_data[3:]))
+    else:
+      new_hit_objects.append(hit_objects[i])
+
+  return new_hit_objects
+
+def format_training_data(
+  metadata, time_points, hit_objects, audio_data,
+  relative_timing=False, break_length=4):
   prior_str = '<Metadata>'
   for key, value in metadata.items():
     if key in DEFAULT_METADATA:
@@ -405,6 +455,8 @@ def format_training_data(metadata, time_points, hit_objects, audio_data, relativ
     f_time_points, slider_changes = get_time_points_in_range(
       f_time_points, hit_objects[1:], slider_changes)
     hit_objects = convert_to_relative_time(hit_objects, f_time_points)
+    if break_length > 0:
+      hit_objects = add_hit_object_breaks(hit_objects, break_length)
   else:
     f_time_points, slider_changes = get_time_points_in_range(
       f_time_points, hit_objects, slider_changes)
@@ -450,5 +502,5 @@ if __name__ == '__main__':
   sampled_data = sample_from_map(*full_data[1], n_hit_objects=50)
   # print(sampled_data)
 
-  formatted_data = format_training_data(*sampled_data, relative_timing=True)
+  formatted_data = format_training_data(*sampled_data, relative_timing=True, break_length=4)
   print(formatted_data[1].replace('<HitObject>', '\n'))

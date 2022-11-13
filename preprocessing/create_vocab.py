@@ -22,7 +22,9 @@ def create_default_vocab(args, config):
   token_counts = Counter()
   for batch_idx, batch in enumerate(train_loader):
     batch_samples = [sample_from_map(*map) for map in batch]
-    training_samples = [format_training_data(*map) for map in batch_samples]
+    training_samples = [format_training_data(
+      *map, config['relative_timing'], config['break_length']) \
+      for map in batch_samples]
     print(training_samples)
     for sample in training_samples:
       tokens = tokenize(sample)
@@ -51,7 +53,9 @@ def create_sentencepiece_model(args, config):
   with open(tmp_file, 'w+') as f:
     for batch_idx, batch in enumerate(train_loader):
       batch_samples = [sample_from_map(*map) for map in batch]
-      training_samples = [''.join(format_training_data(*map)) for map in batch_samples]
+      training_samples = [''.join(format_training_data(
+        *map, config['relative_timing'], config['break_length'])) \
+        for map in batch_samples]
       for sample in training_samples:
         f.write(sample + '\n')
       if args.early_stop > 0 and batch_idx >= args.early_stop - 1:

@@ -22,7 +22,7 @@ def eval(model, data_loader, preprocess_text, config):
   for batch in tqdm(data_loader):
     batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
     training_samples = [format_training_data(
-      *map, config['relative_timing']) \
+      *map, config['relative_timing'], config['break_length']) \
       for map in batch_samples]
 
     src, tgt = zip(*training_samples)
@@ -53,7 +53,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       model.train()
       batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
       training_samples = [format_training_data(
-        *map, config['relative_timing']) \
+        *map, config['relative_timing'], config['break_length']) \
         for map in batch_samples]
 
       src, tgt = zip(*training_samples)
@@ -107,7 +107,8 @@ if __name__ == '__main__':
   
   # Get data loaders
   train_loader, val_loader, test_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))
+    config['beatmap_path'], batch_size=config.get('batch_size'),
+    val_split=config.get('val_split'), test_split=config.get('test_split'))
   preprocess_text, vocab = get_text_preprocessor(config)
 
   # Create model and load when applicable
