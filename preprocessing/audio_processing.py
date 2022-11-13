@@ -10,15 +10,15 @@ from collections import deque
 from zipfile import ZipFile
 from utils import load_config
 
-def process_song():
+def process_song(song_name):
     '''
     process the given song, analyze it, then create a chart for it
     Usage: audio_processing.py song_file.mp3
     '''
 
-    dir_name = sys.argv[1] + " segments"
+    dir_name = song_name + " segments"
 
-    song = sys.argv[1][:len(sys.argv[1]) - 4]
+    song = song_name[:len(song_name) - 4]
     npy_file = song + " Input.npy"
     dir_list = os.listdir()
 
@@ -26,7 +26,7 @@ def process_song():
 
     if dir_name not in dir_list:
         print("Segmenting song..")
-        segment_song(sys.argv[1], config['segment_length'])
+        segment_song(song_name, config['segment_length'])
     else:
         print("Song already segmented, moving on..")
 

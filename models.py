@@ -1,13 +1,22 @@
 import torch
 from torch import nn, Tensor
+import torch.nn.functional as F
 
 import math
+import numpy as np
 
 
 class DefaultTransformer(nn.Module):
     def __init__(self, n_token: int, d_model: int, n_head: int, d_hid: int,
                  n_encoder_layers: int, n_decoder_layers: int, dropout: float = 0.5):
         super().__init__()
+
+        self.audio_conv1 = nn.Conv1d(80, 16, 3)
+        self.audio_dropout = nn.Dropout1d(dropout)
+        self.audio_pool = nn.MaxPool1d(2)
+        self.audio_conv2 = nn.Conv1d(16, 32, 3)
+        self.audio_fc = nn.Linear(32 * 10, 128)
+
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(d_model, dropout)
         self.transformer = nn.Transformer(
@@ -33,6 +42,15 @@ class DefaultTransformer(nn.Module):
         Returns:
             output Tensor of shape [seq_len, batch_size, ntoken]
         """
+
+        # TODO: extract song as numpy array from src and use here + adjust the 16 as necessary
+        song = np.zeros((16, 80))
+        song = self.audio_pool(self.audio_dropout(F.relu(self.audio_conv1(song))))
+        song = self.audio_pool(F.relu(self.audio_conv2(song)))
+        song = torch.flatten(song, 1)
+        song = F.relu(self.audio_fc(song))
+        # 128 features, use them as you will
+
         src = self.embedding(src) * math.sqrt(self.d_model)
         tgt = self.embedding(tgt) * math.sqrt(self.d_model)
 
