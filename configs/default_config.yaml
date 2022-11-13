@@ -37,3 +37,8 @@ dropout: 0
 eval_freq: 30000 # In number of samples
 val_split: 0.01
 test_split: 0.05
+
+# Audio
+segment_length: 23 # Audio segmentation size
+prev_audio_segments_per_hitobject: 15 # How many previous audio segments to consider for the acoompanying audio signal of each hit object
+next_audio_segments_per_hitobject: 0 # Same but for next
