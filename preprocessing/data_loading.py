@@ -20,7 +20,7 @@ HIT_OBJECT_END_TOKEN = '<End>'
 DEFAULT_METADATA = set([
   'DistanceSpacing', # 'AudioLeadIn', 'Countdown', 'CountdownOffset', 
   'BeatDivisor', 'GridSize', 'CircleSize', 'OverallDifficulty', 'ApproachRate',
-  'SliderMultiplier', 'SliderTickRate', 'HPDrainRate'
+  'SliderMultiplier', 'SliderTickRate', 'HPDrainRate', 'FormatVersion'
 ])
 
 
@@ -102,26 +102,6 @@ def load_beatmap_data(path):
         hit_objects.append(groups[0].strip())
 
   return metadata, timing_points, hit_objects
-
-def filterV14(root_dir):
-  map_dir = os.path.join(root_dir, 'maps')
-  mapping = pd.read_csv(
-    os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
-  mapping = mapping.to_dict()['song']
-  map_list = list(mapping.keys())
-  map_ids = []
-  for map_id in map_list:
-    p = os.path.join(map_dir, map_id)
-    with open(p, 'r', encoding='utf8') as f:
-      data = f.read()
-
-    lines = data.split('\n')
-    # Get the osu file format version
-    result = re.search(VERSION_PATTERN, lines[0])
-    groups = result.groups() if result else tuple([None])
-    if groups[0] == '14':
-      map_ids.append(map_id)
-  return map_ids
 
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
@@ -330,7 +310,10 @@ def format_hit_objects(hit_objects):
 def format_training_data(metadata, time_points, hit_objects, audio_data):
   prior_str = '<Metadata>'
   for key, value in metadata.items():
-    prior_str += f'<{key}>{value}'
+    print(key)
+    if key in DEFAULT_METADATA:
+      print(key)
+      prior_str += f'<{key}>{value}'
 
   f_time_points, slider_changes = format_time_points(time_points)
   f_time_points, slider_changes = get_time_points_in_range(
