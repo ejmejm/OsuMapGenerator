@@ -1,3 +1,5 @@
+import os
+
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
@@ -5,6 +7,23 @@ import torch.nn.functional as F
 import math
 import numpy as np
 
+
+def model_from_config(config, vocab):
+    # Create the model and load when applicable
+    model = DefaultTransformer(
+        n_token = len(vocab),
+        d_model = config['d_model'],
+        n_head = config['n_head'],
+        d_hid = config['d_hid'],
+        n_encoder_layers = config['n_encoder_layers'],
+        n_decoder_layers = config['n_decoder_layers'],
+        dropout = config['dropout']
+    ).to(config['device'])
+
+    if config['load_model'] and os.path.exists(config['model_save_path']):
+        model.load_state_dict(torch.load(config['model_save_path']))
+
+    return model
 
 class DefaultTransformer(nn.Module):
     def __init__(self, n_token: int, d_model: int, n_head: int, d_hid: int,
