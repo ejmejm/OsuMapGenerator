@@ -6,6 +6,7 @@ data/raw_beatmaps/*.osz
 data/*.gz
 output/*
 other_cofigs/
+wandb/
 **__pycache__/
 **.pt
 **.model

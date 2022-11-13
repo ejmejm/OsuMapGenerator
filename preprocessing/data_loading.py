@@ -20,7 +20,7 @@ HIT_OBJECT_END_TOKEN = '<End>'
 DEFAULT_METADATA = set([
   'DistanceSpacing', # 'AudioLeadIn', 'Countdown', 'CountdownOffset', 
   'BeatDivisor', 'GridSize', 'CircleSize', 'OverallDifficulty', 'ApproachRate',
-  'SliderMultiplier', 'SliderTickRate', 'HPDrainRate'
+  'SliderMultiplier', 'SliderTickRate', 'HPDrainRate', 'FormatVersion'
 ])
 
 
@@ -310,7 +310,10 @@ def format_hit_objects(hit_objects):
 def format_training_data(metadata, time_points, hit_objects, audio_data):
   prior_str = '<Metadata>'
   for key, value in metadata.items():
-    prior_str += f'<{key}>{value}'
+    print(key)
+    if key in DEFAULT_METADATA:
+      print(key)
+      prior_str += f'<{key}>{value}'
 
   f_time_points, slider_changes = format_time_points(time_points)
   f_time_points, slider_changes = get_time_points_in_range(
