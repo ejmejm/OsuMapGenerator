@@ -13,6 +13,7 @@ output_dir: 'output/'
 # Preprocessing
 tokenizer_type: default # sentencepiece
 spm_vocab_size: 1000 # Only used if using sentencepiece
+relative_timing: True
 
 # Model
 d_model: 512

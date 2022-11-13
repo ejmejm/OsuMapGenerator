@@ -21,7 +21,9 @@ def eval(model, data_loader, preprocess_text, config):
   model.eval()
   for batch in tqdm(data_loader):
     batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
-    training_samples = [format_training_data(*map) for map in batch_samples]
+    training_samples = [format_training_data(
+      *map, config['relative_timing']) \
+      for map in batch_samples]
 
     src, tgt = zip(*training_samples)
     src_tensor, tgt_tensor, src_mask, tgt_mask = prepare_tensor_seqs(src, tgt, preprocess_text, config)
@@ -50,7 +52,9 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
     for batch in (pbar := tqdm(train_loader)):
       model.train()
       batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
-      training_samples = [format_training_data(*map) for map in batch_samples]
+      training_samples = [format_training_data(
+        *map, config['relative_timing']) \
+        for map in batch_samples]
 
       src, tgt = zip(*training_samples)
       # Convert text to numerical tensors with padding and corresponding masks

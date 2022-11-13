@@ -1,6 +1,7 @@
 from decimal import Decimal, getcontext
 import os
 import re
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -307,17 +308,106 @@ def format_hit_objects(hit_objects):
       new_hit_objects.append(','.join(ho_data[:3] + ['1', '0']))
   return new_hit_objects
 
-def format_training_data(metadata, time_points, hit_objects, audio_data):
+def format_time_diff(time_diff, beat_len, precision=5):
+  """
+  Converts a time diff to a relative string format.
+
+  Format of time: <1>:<1/2><1/4><1/8><1/16><1/32> where each number is
+    the fraction of the beat length.
+  For example, 5:0100 means 5 + 1/4 beats.
+  The above can also be truncated to 5:01.
+
+  Returns the time diff as a string and the rounding error remainder.
+  """
+  min_diff = beat_len / (2 ** precision)
+  time_diff += min_diff / 2 # For rounding
+  remainder = time_diff % beat_len
+
+  time_diff_str = str(int(time_diff / beat_len))
+
+  if remainder < min_diff:
+    return time_diff_str, remainder
+  
+  time_diff_str += ':'
+  for i in range(precision):
+    if remainder < min_diff:
+      break
+    elif remainder >= beat_len / (2 ** (i + 1)):
+      time_diff_str += '1'
+      remainder -= beat_len / (2 ** (i + 1))
+    else:
+      time_diff_str += '0'
+
+  if time_diff_str == '0' and time_diff > min_diff / 2:
+    warnings.warn(
+      f'Time diff {time_diff} is too small to ' + \
+      f'be represented with beat length {beat_len}')
+
+  return time_diff_str, remainder - min_diff / 2
+
+def convert_to_relative_time(hit_objects, time_points):
+  """
+  Converts hit objects and time points to relative time.
+
+  Format of time: <1>:<1/2><1/4><1/8><1/16><1/32> where each number is
+    the fraction of the beat length.
+  For example, 5:0100 means 5 + 1/4 beats.
+  The above can also be truncated to 5:01.
+  """
+  hit_object_times = []
+  for ho in hit_objects:
+    if ho == HIT_OBJECT_START_TOKEN:
+      hit_object_times.append(0)
+    elif ho == HIT_OBJECT_END_TOKEN:
+      hit_object_times.append(hit_object_times[-1])
+    else:
+      hit_object_times.append(int(ho.split(',')[2]))
+
+  time_point_times = [float(tp.split(',')[0]) for tp in time_points]
+  beat_lengths = [float(tp.split(',')[1]) for tp in time_points]
+
+  time_point_idx = 0
+  new_hit_objects = []
+  for i in range(1, len(hit_objects)):
+    if hit_objects[i] in (HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN):
+      new_hit_objects.append(hit_objects[i])
+      continue
+
+    # Key time_point_idx at the last time point before the hit object
+    is_last_time_point = time_point_idx == len(time_point_times) - 1
+    while not is_last_time_point \
+          and hit_object_times[i] >= time_point_times[time_point_idx + 1]:
+      time_point_idx += 1
+      is_last_time_point = time_point_idx == len(time_point_times) - 1
+    
+    # Compute the relative time string
+    beat_length = beat_lengths[time_point_idx]
+    last_ho_time = hit_object_times[i - 1]
+    ho_time = hit_object_times[i]
+    time_diff = ho_time - last_ho_time
+    time_diff_str = format_time_diff(time_diff, beat_length)[0]
+
+    # Create the new hit object with the relative time string
+    hit_object_data = hit_objects[i].split(',')
+    new_hit_objects.append(','.join(hit_object_data[:2] + [time_diff_str] + hit_object_data[3:]))
+
+  return new_hit_objects
+
+def format_training_data(metadata, time_points, hit_objects, audio_data, relative_timing=False):
   prior_str = '<Metadata>'
   for key, value in metadata.items():
-    print(key)
     if key in DEFAULT_METADATA:
-      print(key)
       prior_str += f'<{key}>{value}'
 
   f_time_points, slider_changes = format_time_points(time_points)
-  f_time_points, slider_changes = get_time_points_in_range(
-    f_time_points, hit_objects, slider_changes)
+
+  if relative_timing:
+    f_time_points, slider_changes = get_time_points_in_range(
+      f_time_points, hit_objects[1:], slider_changes)
+    hit_objects = convert_to_relative_time(hit_objects, f_time_points)
+  else:
+    f_time_points, slider_changes = get_time_points_in_range(
+      f_time_points, hit_objects, slider_changes)
 
   prior_str += '<TimePoints>'
   for tp in f_time_points:
@@ -336,7 +426,7 @@ def format_training_data(metadata, time_points, hit_objects, audio_data):
   pred_str = ''
   f_hit_objects = format_hit_objects(hit_objects)
   for ho in f_hit_objects:
-    if ho in ['<s>', '</s>']:
+    if ho in [HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN]:
       pred_str += ho
     else:
       pred_str += f'<HitObject>{ho}'
@@ -352,10 +442,13 @@ if __name__ == '__main__':
   # print(len(dataset))
   # print(dataset[5])
 
-  train_loader, val_loader, test_loader = get_dataloaders('../data/formatted_beatmaps/', batch_size=2)
-  print(len(train_loader))
+  train_loader, val_loader, test_loader = get_dataloaders('./data/formatted_beatmaps/', batch_size=2)
+  # print(len(train_loader))
   full_data = next(iter(train_loader))
-  print(full_data)
+  # print(full_data)
 
-  sampled_data = sample_from_map(*full_data[1])
-  print(sampled_data)
+  sampled_data = sample_from_map(*full_data[1], n_hit_objects=50)
+  # print(sampled_data)
+
+  formatted_data = format_training_data(*sampled_data, relative_timing=True)
+  print(formatted_data[1].replace('<HitObject>', '\n'))
