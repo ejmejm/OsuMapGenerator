@@ -103,7 +103,7 @@ if __name__ == '__main__':
   
   # Get data loaders
   train_loader, val_loader, test_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'), val_split=0.01)
+    config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))
   preprocess_text, vocab = get_text_preprocessor(config)
 
   # Create model and load when applicable
