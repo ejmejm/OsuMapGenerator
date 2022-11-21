@@ -1,6 +1,10 @@
 from decimal import Decimal, getcontext
 import os
 import re
+import warnings
+
+from audio_processing import process_song
+from utils import load_config
 
 import numpy as np
 import pandas as pd
@@ -15,14 +19,15 @@ TIMING_POINT_PATTERN = r'^([0-9,.-]+)(?://.*)?$'
 HIT_OBJECT_PATTERN = r'^(.+?)(?://.*)?$'
 HIT_OBJECT_START_TOKEN = '<Start>'
 HIT_OBJECT_END_TOKEN = '<End>'
-
+BREAK_TOKEN = '<Break>'
 
 DEFAULT_METADATA = set([
   'DistanceSpacing', # 'AudioLeadIn', 'Countdown', 'CountdownOffset', 
   'BeatDivisor', 'GridSize', 'CircleSize', 'OverallDifficulty', 'ApproachRate',
-  'SliderMultiplier', 'SliderTickRate', 'HPDrainRate'
+  'SliderMultiplier', 'SliderTickRate', 'HPDrainRate', 'FormatVersion'
 ])
 
+config = load_config()
 
 def load_beatmap_data(path):
   """
@@ -103,26 +108,6 @@ def load_beatmap_data(path):
 
   return metadata, timing_points, hit_objects
 
-def filterV14(root_dir):
-  map_dir = os.path.join(root_dir, 'maps')
-  mapping = pd.read_csv(
-    os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
-  mapping = mapping.to_dict()['song']
-  map_list = list(mapping.keys())
-  map_ids = []
-  for map_id in map_list:
-    p = os.path.join(map_dir, map_id)
-    with open(p, 'r', encoding='utf8') as f:
-      data = f.read()
-
-    lines = data.split('\n')
-    # Get the osu file format version
-    result = re.search(VERSION_PATTERN, lines[0])
-    groups = result.groups() if result else tuple([None])
-    if groups[0] == '14':
-      map_ids.append(map_id)
-  return map_ids
-
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
   def __init__(self, root_dir, include_audio=True, map_ids=None):
@@ -157,7 +142,10 @@ class OsuDataset(Dataset):
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
       # TODO: Add audio loading here
-      audio_data = []
+      processed_audio = process_song(os.path.join(self.audio_dir, self.mapping[idx]))
+      audio_data = np.frombuffer(buffer=processed_audio, dtype=np.float32, count=-1)
+      audio_data = audio_data[0:processed_audio.shape[0]*processed_audio.shape[1]]
+      audio_data = np.reshape(audio_data, processed_audio.shape)
     else:
       audio_data = []
 
@@ -207,8 +195,8 @@ def sample_split_from_map(
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
-  prior_audio = []
-  new_audio = []
+  prior_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in prior_ho]
+  new_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in new_ho]
 
   return selected_metadata, selected_time_points, prior_ho, \
          new_ho, prior_audio, new_audio
@@ -232,7 +220,8 @@ def sample_from_map(
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
-  selected_audio = []
+  selected_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in selected_hit_objects]
+
 
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio
@@ -327,14 +316,157 @@ def format_hit_objects(hit_objects):
       new_hit_objects.append(','.join(ho_data[:3] + ['1', '0']))
   return new_hit_objects
 
-def format_training_data(metadata, time_points, hit_objects, audio_data):
+def format_time_diff(time_diff, beat_len, precision=5):
+  """
+  Converts a time diff to a relative string format.
+
+  Format of time: <1>:<1/2><1/4><1/8><1/16><1/32> where each number is
+    the fraction of the beat length.
+  For example, 5:0100 means 5 + 1/4 beats.
+  The above can also be truncated to 5:01.
+
+  Returns the time diff as a string and the rounding error remainder.
+  """
+  min_diff = beat_len / (2 ** precision)
+  time_diff += min_diff / 2 # For rounding
+  remainder = time_diff % beat_len
+
+  time_diff_str = str(int(time_diff / beat_len))
+
+  if remainder < min_diff:
+    return time_diff_str, remainder
+  
+  time_diff_str += ':'
+  for i in range(precision):
+    if remainder < min_diff:
+      break
+    elif remainder >= beat_len / (2 ** (i + 1)):
+      time_diff_str += '1'
+      remainder -= beat_len / (2 ** (i + 1))
+    else:
+      time_diff_str += '0'
+
+  if time_diff_str == '0' and time_diff > min_diff / 2:
+    warnings.warn(
+      f'Time diff {time_diff} is too small to ' + \
+      f'be represented with beat length {beat_len}')
+
+  return time_diff_str, remainder - min_diff / 2
+
+def convert_to_relative_time(hit_objects, time_points):
+  """
+  Converts hit objects and time points to relative time.
+
+  Format of time: <1>:<1/2><1/4><1/8><1/16><1/32> where each number is
+    the fraction of the beat length.
+  For example, 5:0100 means 5 + 1/4 beats.
+  The above can also be truncated to 5:01.
+  """
+  hit_object_times = []
+  for ho in hit_objects:
+    if ho == HIT_OBJECT_START_TOKEN:
+      hit_object_times.append(0)
+    elif ho == HIT_OBJECT_END_TOKEN:
+      hit_object_times.append(hit_object_times[-1])
+    else:
+      hit_object_times.append(int(ho.split(',')[2]))
+
+  time_point_times = [float(tp.split(',')[0]) for tp in time_points]
+  beat_lengths = [float(tp.split(',')[1]) for tp in time_points]
+
+  time_point_idx = 0
+  new_hit_objects = []
+  for i in range(1, len(hit_objects)):
+    if hit_objects[i] in (HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN):
+      new_hit_objects.append(hit_objects[i])
+      continue
+
+    # Key time_point_idx at the last time point before the hit object
+    is_last_time_point = time_point_idx == len(time_point_times) - 1
+    while not is_last_time_point \
+          and hit_object_times[i] >= time_point_times[time_point_idx + 1]:
+      time_point_idx += 1
+      is_last_time_point = time_point_idx == len(time_point_times) - 1
+    
+    # Compute the relative time string
+    beat_length = beat_lengths[time_point_idx]
+    last_ho_time = hit_object_times[i - 1]
+    ho_time = hit_object_times[i]
+    time_diff = ho_time - last_ho_time
+    time_diff_str = format_time_diff(time_diff, beat_length)[0]
+
+    # Create the new hit object with the relative time string
+    hit_object_data = hit_objects[i].split(',')
+    new_hit_objects.append(','.join(hit_object_data[:2] + [time_diff_str] + hit_object_data[3:]))
+
+  return new_hit_objects
+
+def get_relative_time_beats(hit_object):
+  """
+  Gets the number of beats in a relative time string.
+  """
+  beats = float(hit_object[0])
+  if len(hit_object) <= 1 or hit_object[1] != ':':
+    return beats
+
+  for i in range(2, len(hit_object)):
+    beats += 1 / (2 ** (i - 1))
+  return beats
+
+def get_hit_object_time(hit_object, relative=False):
+  """When relative gets the number of beats, otherwise gets the time."""
+  if hit_object == HIT_OBJECT_START_TOKEN:
+    return 0
+  elif hit_object == HIT_OBJECT_END_TOKEN:
+    return -1
+  
+  time_str = hit_object.split(',')[2]
+  if relative:
+    return get_relative_time_beats(time_str)
+  return float(time_str)
+
+def add_hit_object_breaks(hit_objects, break_length):
+  """
+  Add breaks to hit objects when there are long delays with no hit objects.
+  Currently only works with relative time.
+  """
+  new_hit_objects = [hit_objects[0]]
+
+  for i in range(1, len(hit_objects)):
+    beats = get_hit_object_time(hit_objects[i], relative=True)
+    if beats > break_length:
+      # Add enough breaks to fill the gap
+      n_breaks = int(np.ceil((beats / break_length) - 1))
+      new_hit_objects.extend([BREAK_TOKEN for _ in range(n_breaks)])
+      new_beats = beats - n_breaks * break_length
+      time_str = format_time_diff(new_beats, 1)[0]
+
+      ho_data = hit_objects[i].split(',')
+      new_hit_objects.append(','.join(ho_data[:2] + [time_str] + ho_data[3:]))
+    else:
+      new_hit_objects.append(hit_objects[i])
+
+  return new_hit_objects
+
+def format_training_data(
+  metadata, time_points, hit_objects, audio_data,
+  relative_timing=False, break_length=4):
   prior_str = '<Metadata>'
   for key, value in metadata.items():
-    prior_str += f'<{key}>{value}'
+    if key in DEFAULT_METADATA:
+      prior_str += f'<{key}>{value}'
 
   f_time_points, slider_changes = format_time_points(time_points)
-  f_time_points, slider_changes = get_time_points_in_range(
-    f_time_points, hit_objects, slider_changes)
+
+  if relative_timing:
+    f_time_points, slider_changes = get_time_points_in_range(
+      f_time_points, hit_objects[1:], slider_changes)
+    hit_objects = convert_to_relative_time(hit_objects, f_time_points)
+    if break_length > 0:
+      hit_objects = add_hit_object_breaks(hit_objects, break_length)
+  else:
+    f_time_points, slider_changes = get_time_points_in_range(
+      f_time_points, hit_objects, slider_changes)
 
   prior_str += '<TimePoints>'
   for tp in f_time_points:
@@ -353,7 +485,7 @@ def format_training_data(metadata, time_points, hit_objects, audio_data):
   pred_str = ''
   f_hit_objects = format_hit_objects(hit_objects)
   for ho in f_hit_objects:
-    if ho in ['<s>', '</s>']:
+    if ho in [HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN]:
       pred_str += ho
     else:
       pred_str += f'<HitObject>{ho}'
@@ -369,10 +501,13 @@ if __name__ == '__main__':
   # print(len(dataset))
   # print(dataset[5])
 
-  train_loader, val_loader, test_loader = get_dataloaders('../data/formatted_beatmaps/', batch_size=2)
-  print(len(train_loader))
+  train_loader, val_loader, test_loader = get_dataloaders('./data/formatted_beatmaps/', batch_size=2)
+  # print(len(train_loader))
   full_data = next(iter(train_loader))
-  print(full_data)
+  # print(full_data)
 
-  sampled_data = sample_from_map(*full_data[1])
-  print(sampled_data)
+  sampled_data = sample_from_map(*full_data[1], n_hit_objects=50)
+  # print(sampled_data)
+
+  formatted_data = format_training_data(*sampled_data, relative_timing=True, break_length=4)
+  print(formatted_data[1].replace('<HitObject>', '\n'))

@@ -13,6 +13,8 @@ output_dir: 'output/'
 # Preprocessing
 tokenizer_type: default # sentencepiece
 spm_vocab_size: 1000 # Only used if using sentencepiece
+relative_timing: True
+break_length: 4 # How many beats without a hit object before breaks appear
 
 # Model
 d_model: 128
@@ -33,3 +35,10 @@ epochs: 10
 batch_size: 8
 dropout: 0
 eval_freq: 30000 # In number of samples
+val_split: 0.01
+test_split: 0.05
+
+# Audio
+segment_length: 23 # Audio segmentation size
+prev_audio_segments_per_hitobject: 15 # How many previous audio segments to consider for the acoompanying audio signal of each hit object
+next_audio_segments_per_hitobject: 0 # Same but for next

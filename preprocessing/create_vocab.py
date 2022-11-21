@@ -17,15 +17,19 @@ def create_default_vocab(args, config):
   tokenize = get_tokenizer(config)
 
   train_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))[0]
+    config['beatmap_path'], batch_size=config.get('batch_size'), val_split=0.01)[0]
 
   token_counts = Counter()
   for batch_idx, batch in enumerate(train_loader):
     batch_samples = [sample_from_map(*map) for map in batch]
-    training_samples = [''.join(format_training_data(*map)) for map in batch_samples]
+    training_samples = [format_training_data(
+      *map, config['relative_timing'], config['break_length']) \
+      for map in batch_samples]
+    print(training_samples)
     for sample in training_samples:
       tokens = tokenize(sample)
       token_counts.update(tokens)
+      # print(token_counts)
     if args.early_stop > 0 and batch_idx >= args.early_stop - 1:
       break
 
@@ -42,14 +46,16 @@ def create_sentencepiece_model(args, config):
   print('Creating vocab with sentencepiece')
 
   train_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))[0]
+    config['beatmap_path'], batch_size=config.get('batch_size'))[0]
 
   vocab_size = config['spm_vocab_size']
   tmp_file = 'vocab_train.txt'
   with open(tmp_file, 'w+') as f:
     for batch_idx, batch in enumerate(train_loader):
       batch_samples = [sample_from_map(*map) for map in batch]
-      training_samples = [''.join(format_training_data(*map)) for map in batch_samples]
+      training_samples = [''.join(format_training_data(
+        *map, config['relative_timing'], config['break_length'])) \
+        for map in batch_samples]
       for sample in training_samples:
         f.write(sample + '\n')
       if args.early_stop > 0 and batch_idx >= args.early_stop - 1:
