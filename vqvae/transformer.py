@@ -269,6 +269,40 @@ class VQVaeTransformer(nn.Module):
         seq_logit = self.trg_word_prj(dec_output)
         return seq_logit
 
+    def sample(self, src_seq, trg_sos, trg_eos, max_steps=100, sample=False, top_k=None):
+        trg_seq = torch.LongTensor(src_seq.size(0), 1).fill_(trg_sos).to(src_seq).long()
+
+        # batch_size, src_seq_len = src_seq.shape[0], src_seq.shape[1]
+        # src_mask = get_pad_mask(batch_size, src_seq_len, src_non_pad_lens).to(src_seq.device)
+        src_mask = get_pad_mask_idx(src_seq, self.src_pad_idx)
+        enc_output, *_ = self.encoder(src_seq, src_mask)
+
+        for _ in range(max_steps):
+            # print(trg_seq)
+            trg_mask = get_subsequent_mask(trg_seq)
+            dec_output, *_ = self.decoder(trg_seq, trg_mask, enc_output, src_mask)
+            seq_logit = self.trg_word_prj(dec_output)
+            logits = seq_logit[:, -1, :]
+
+            if top_k is not None:
+                logits = top_k_logits(logits, top_k)
+            probs = F.softmax(logits, dim=-1)
+            _, ix = torch.topk(probs, k=1, dim=-1)
+            if ix[0] == trg_eos:
+                break
+
+            if sample:
+                ix = torch.multinomial(probs, num_samples=1)
+                while (ix[0] in [trg_sos, trg_eos]):
+                    ix = torch.multinomial(probs, num_samples=1)
+            trg_seq = torch.cat((trg_seq, ix), dim=1)
+        return trg_seq
+
+def top_k_logits(logits, k):
+    v, ix = torch.topk(logits, k)
+    out = logits.clone()
+    out[out < v[:, [-1]]] = -float('Inf')
+    return out
 
 def gen_seq_mask(sz: int) -> Tensor:
     """Generates an upper-triangular matrix of -inf, with zeros on diag."""

@@ -44,7 +44,7 @@ class OsuVQVaeDataset(Dataset):
     return map_id, hit_objects
 
 class OsuTokensDataset(Dataset):
-  def __init__(self, root_dir, include_audio=True):
+  def __init__(self, root_dir, include_audio=True, map_ids=None):
     self.root_dir = root_dir
     self.include_audio = include_audio
     self.map_dir = os.path.join(root_dir, 'maps')
@@ -54,11 +54,20 @@ class OsuTokensDataset(Dataset):
     self.mapping = pd.read_csv(
       os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
     self.mapping = self.mapping.to_dict()['song']
+    if map_ids is not None:
+      new_mapping = {}
+      for map_id in map_ids:
+        new_mapping[map_id] = self.mapping[map_id]
+      self.mapping = new_mapping
     self.map_list = list(self.mapping.keys())
 
   def __len__(self):
     # This returns the number of maps, not the actual number of samples
     return len(self.map_list)
+
+  def get_map_path(self, idx):
+    map_id = self.map_list[idx]
+    return os.path.join(self.map_dir, map_id)
 
   def __getitem__(self, idx):
     # Need to return selected metadata text, hitobject text, and audio data separately

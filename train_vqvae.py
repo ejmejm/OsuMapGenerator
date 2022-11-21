@@ -16,7 +16,7 @@ from preprocessing.data_loading import format_training_data
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
 from vqvae.tools import prepare_tensor_vqvae
 from utils import load_config, parse_args, log
-from vqvae.vqvae_model import VQEncoder, VQDecoder, Quantizer
+from vqvae.vqvae_model import VQEncoder, VQDecoder, Quantizer, build_model
 import codecs as cs
 
 # Create arguments
@@ -25,19 +25,6 @@ parser = argparse.ArgumentParser()
 
 
 BEATMAP_PATH = 'data/formatted_beatmaps/'
-
-
-def build_model(input_size, enc_channels, dec_channels, config):
-  vq_encoder = VQEncoder(input_size - 1, enc_channels, config["n_down"])
-  vq_decoder = VQDecoder(config['dim_vq_latent'], dec_channels, config['n_resblk'], config["n_down"])
-  quantizer = Quantizer(config['codebook_size'], config['dim_vq_latent'], config['lambda_beta'])
-
-  if config['load_model'] and os.path.exists(config['model_vqvae_save_path']):
-    checkpoint = torch.load(config['model_vqvae_save_path'])
-    vq_encoder.load_state_dict(checkpoint['vq_encoder'])
-    vq_decoder.load_state_dict(checkpoint['vq_decoder'])
-    quantizer.load_state_dict(checkpoint['quantizer'])
-  return vq_encoder, vq_decoder, quantizer
 
 def eval(encoder, decoder, quantizer, data_loader, preprocess_text, config):
   losses = []
@@ -183,8 +170,8 @@ if __name__ == '__main__':
     config['beatmap_path'], batch_size=config.get('batch_size'), val_split = config.get('val_split'), test_split = config.get('test_split'))
   preprocess_text, vocab = get_text_preprocessor(config)
   
-  enc_channels = [256, config.get('dim_vq_latent')]
-  dec_channels = [config.get('dim_vq_latent'), 256, config.get('input_size')]
+  enc_channels = [config.get('dim_vq_latent')]
+  dec_channels = [config.get('dim_vq_latent'), config.get('input_size')]
   # Create the model and load when applicable
   encoder, decoder, quantizer = build_model(config.get('input_size'), enc_channels, dec_channels, config)
 

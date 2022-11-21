@@ -71,8 +71,23 @@ def eval(model, data_loader, preprocess_text, config):
     losses.append(loss.item())
 
   return losses
-  
 
+def cal_performance(pred, gold, trg_pad_idx):
+  loss = cal_loss(pred, gold, trg_pad_idx)
+  pred = pred.max(1)[1]
+  gold = gold.contiguous().view(-1)
+  non_pad_mask = gold.ne(trg_pad_idx)
+  n_correct = pred.eq(gold).masked_select(non_pad_mask).sum().item()
+  n_word = non_pad_mask.sum().item()
+  return loss, pred, n_correct, n_word
+
+
+def cal_loss(pred, gold, trg_pad_idx):
+  '''Calculate cross entropy loss, apply label smoothing if needed.'''
+  loss = F.cross_entropy(pred, gold, ignore_index=trg_pad_idx, reduction='sum')
+  return loss
+
+  
 def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
   last_eval = 0
   curr_idx = 0
@@ -114,13 +129,14 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
         gt_tensor = tgt_tensor[:, :-1]
 
         output = model(src_tensor, gt_tensor)
-
-        output = output.view(-1, output.shape[-1]).clone()
-        target = target.contiguous().view(-1).clone()
       # Calculate loss
-      loss = F.cross_entropy(output, target)
+      o = output.view(-1, output.shape[-1]).clone()
+      gt = target.contiguous().view(-1).clone()
+      loss, pred_seq, n_correct, n_word = cal_performance(o, gt, config['codebook_size'] + 2)
       losses.append(loss.item())
-      pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item():.3f}')
+      print(target[0])
+      print(pred_seq.view(target.shape)[0])
+      pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item()/n_word:.3f}')
       log({'epoch': epoch_idx, 'train_loss': losses[-1]}, config)
       
       # Backprop
@@ -138,7 +154,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
 
         if 'model_save_path' in config:
           torch.save(model.state_dict(), config['model_save_path'])
-      if epoch_idx % config['lr_scheduler_e'] == 0:
+      if curr_idx % config['lr_scheduler_e'] == 0:
         opt_lr.step()
   return losses
 

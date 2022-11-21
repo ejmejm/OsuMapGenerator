@@ -1,6 +1,20 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import os
+
+def build_model(input_size, enc_channels, dec_channels, config):
+  vq_encoder = VQEncoder(input_size - 1, enc_channels, config["n_down"])
+  vq_decoder = VQDecoder(config['dim_vq_latent'], dec_channels, config['n_resblk'], config["n_down"])
+  quantizer = Quantizer(config['codebook_size'], config['dim_vq_latent'], config['lambda_beta'])
+
+  if config['load_model'] and os.path.exists(config['model_vqvae_save_path']):
+    checkpoint = torch.load(config['model_vqvae_save_path'])
+    vq_encoder.load_state_dict(checkpoint['vq_encoder'])
+    vq_decoder.load_state_dict(checkpoint['vq_decoder'])
+    quantizer.load_state_dict(checkpoint['quantizer'])
+  return vq_encoder, vq_decoder, quantizer
+
 
 def init_weight(m):
     if isinstance(m, nn.Conv1d) or isinstance(m, nn.Linear) or isinstance(m, nn.ConvTranspose1d):

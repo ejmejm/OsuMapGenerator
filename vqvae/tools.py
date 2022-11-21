@@ -17,24 +17,10 @@ def get_one_hot(value, cate_num):
 
   return one_hot
 
-def prepare_tensor_vqvae(src, preprocess_text, config):
-  """Converts to tensor, pads, and send to device.
-  
-  Args:
-    src: List of strings for transformer encoder
-    tgt: List of strings for transformer decoder
-    config: Dict of config parameters
-  """
-  # only take x, y, time, type, hitSound into consideration now
-  # after the first version, we can add other attributes
-  def process(hitobject):
-    s_arr = hitobject.split(',')
-    return [float(s_arr[0])/2048, float(s_arr[1])/2048, float(s_arr[2])/100000, float(s_arr[3])/1024, float(s_arr[4])/1024]
-    # return [float(s_arr[0]), float(s_arr[1]), float(s_arr[2]), float(s_arr[3]), float(s_arr[4])]
+def format_hitobjects(src):
   src_processed = []
   for s in src:
     line = []
-    last_time = 0
     for obj in s:
       s_arr = obj.split(',')
       # # we use 640 and 480 because osu runs in 640*480 revolution.
@@ -50,7 +36,7 @@ def prepare_tensor_vqvae(src, preprocess_text, config):
       
       # line.append(np.concatenate((x_onehot, y_onehot, time_onehot, type_onehot, hit_sound_onehot), axis=0))
       x = int(int(s_arr[0])/10)/64
-      y = int(int(s_arr[0])/10)/48
+      y = int(int(s_arr[1])/10)/48
       t = int(int(s_arr[2])/10)/1000
       type = int(s_arr[3])/256
       hs = int(s_arr[4])/20
@@ -58,7 +44,42 @@ def prepare_tensor_vqvae(src, preprocess_text, config):
       # line.append([int(s_arr[0])/640, int(s_arr[1])/480, int(s_arr[2])/10000])
     src_processed.append(line)
 
-  src = src_processed
+  return src_processed
+
+def reconstruct_hitobjects(src):
+  src_processed = []
+  for s in src:
+    line = []
+    time_cum = 0
+    for obj in s:
+      x = int(obj[0]* 640)
+      y = int(obj[1]* 480)
+      t = int(obj[2] * 10000) + time_cum
+      type = int(obj[3] * 256)
+      hs = int(obj[4] * 20)
+      line.append([x, y, t, type, hs])
+      time_cum += int(obj[2] * 10000)
+      # line.append([int(s_arr[0])/640, int(s_arr[1])/480, int(s_arr[2])/10000])
+    src_processed.append(line)
+
+  return src_processed
+
+def prepare_tensor_vqvae(src, preprocess_text, config):
+  """Converts to tensor, pads, and send to device.
+  
+  Args:
+    src: List of strings for transformer encoder
+    tgt: List of strings for transformer decoder
+    config: Dict of config parameters
+  """
+  # only take x, y, time, type, hitSound into consideration now
+  # after the first version, we can add other attributes
+  def process(hitobject):
+    s_arr = hitobject.split(',')
+    return [float(s_arr[0])/2048, float(s_arr[1])/2048, float(s_arr[2])/100000, float(s_arr[3])/1024, float(s_arr[4])/1024]
+    # return [float(s_arr[0]), float(s_arr[1]), float(s_arr[2]), float(s_arr[3]), float(s_arr[4])]
+
+  src = format_hitobjects(src)
   # src = [[process(obj) for obj in s] for s in src]
 
   max_src_len = config['input_size']
@@ -91,7 +112,7 @@ def prepare_tensor_transformer(meta, audio, tokens, preprocess_text, config):
   src_tensor, src_mask = prepare_tensor_input(
     meta, config['max_src_len'], config['max_src_len'], preprocess_text, config)
   
-  token_tensor = torch.tensor(tokens).to(config['device'])
+  token_tensor = torch.tensor(tokens).to(config['device']).long()
   tgt_mask = gen_seq_mask(len(tokens[0])).to(config['device'])
   
   return src_tensor, token_tensor, src_mask, tgt_mask
