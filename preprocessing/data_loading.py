@@ -3,9 +3,11 @@ import os
 import re
 import warnings
 
-from audio_processing import process_song
+from preprocessing.audio_processing import process_song, load_audio, audio_to_np
 from utils import load_config
+from pydub.exceptions import CouldntDecodeError
 
+from essentia.standard import MonoLoader
 import numpy as np
 import pandas as pd
 import torch
@@ -20,6 +22,8 @@ HIT_OBJECT_PATTERN = r'^(.+?)(?://.*)?$'
 HIT_OBJECT_START_TOKEN = '<Start>'
 HIT_OBJECT_END_TOKEN = '<End>'
 BREAK_TOKEN = '<Break>'
+AUDIO_SEGMENT_TOKEN = '<AudioSegment>'
+AUDIO_PLACEHOLDER_TOKEN = '<AudioPlaceholder>'
 
 DEFAULT_METADATA = set([
   'DistanceSpacing', # 'AudioLeadIn', 'Countdown', 'CountdownOffset', 
@@ -27,7 +31,6 @@ DEFAULT_METADATA = set([
   'SliderMultiplier', 'SliderTickRate', 'HPDrainRate', 'FormatVersion'
 ])
 
-config = load_config()
 
 def load_beatmap_data(path):
   """
@@ -110,8 +113,9 @@ def load_beatmap_data(path):
 
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
-  def __init__(self, root_dir, include_audio=True, map_ids=None):
+  def __init__(self, root_dir, include_audio=True, map_ids=None, sample_rate=44100):
     self.root_dir = root_dir
+    self.sample_rate = sample_rate
     self.include_audio = include_audio
     self.map_dir = os.path.join(root_dir, 'maps')
     self.audio_dir = os.path.join(root_dir, 'songs')
@@ -142,18 +146,24 @@ class OsuDataset(Dataset):
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
       # TODO: Add audio loading here
-      processed_audio = process_song(os.path.join(self.audio_dir, self.mapping[idx]))
-      audio_data = np.frombuffer(buffer=processed_audio, dtype=np.float32, count=-1)
-      audio_data = audio_data[0:processed_audio.shape[0]*processed_audio.shape[1]]
-      audio_data = np.reshape(audio_data, processed_audio.shape)
+      audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
+      # Curretly takes ~200-1000ms to load a song
+      # audio_data = load_audio(audio_path)
+      # TODO: Delete beatmaps with bad audio in preprocessing
+      audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
+      # processed_audio = process_song(os.path.join(self.audio_dir, self.mapping[idx]), config)
+      # audio_data = np.frombuffer(buffer=processed_audio, dtype=np.float32, count=-1)
+      # audio_data = audio_data[0:processed_audio.shape[0]*processed_audio.shape[1]]
+      # audio_data = np.reshape(audio_data, processed_audio.shape)
     else:
-      audio_data = []
+      audio_data = None
 
     return metadata, time_points, hit_objects, audio_data
 
 # Get dataloaders for training test and validation
 def get_dataloaders(root_dir, batch_size=1, include_audio=True,
-                    val_split=0.05, test_split=0.1, shuffle=True):
+                    val_split=0.05, test_split=0.1, shuffle=True,
+                    n_load_workers=0):
   dataset = OsuDataset(root_dir, include_audio=include_audio)
   # Split dataset into train, val, and test
   val_size = int(val_split * len(dataset))
@@ -165,11 +175,14 @@ def get_dataloaders(root_dir, batch_size=1, include_audio=True,
 
   collate_fn = lambda x: x
   train_loader = DataLoader(
-    train_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    train_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn,
+    num_workers=n_load_workers)
   val_loader = DataLoader(
-    val_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    val_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn,
+    num_workers=n_load_workers)
   test_loader = DataLoader(
-    test_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    test_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn,
+    num_workers=n_load_workers)
 
   return train_loader, val_loader, test_loader
 
@@ -177,33 +190,9 @@ def get_dataloaders(root_dir, batch_size=1, include_audio=True,
 # Samples a portion of data from and entire set of beatmap data
 # Target metadata items, all time_points, prior hit_objects,
 # new hit_objects, prior audio, new audio
-def sample_split_from_map(
-    metadata, time_points, hit_objects, audio_data,
-    n_prior_ho=5, n_new_ho=5, prior_audio_secs=1, new_audio_secs=2,
-    target_metadata=DEFAULT_METADATA):
-
-  selected_metadata = {}
-  for key in target_metadata:
-    value = metadata.get(key)
-    if value is not None:
-      selected_metadata[key] = value
-
-  start_idx = np.random.randint(0, len(hit_objects))
-  prior_ho = hit_objects[max(0, start_idx - n_prior_ho):start_idx]
-  new_ho = hit_objects[start_idx:start_idx + n_new_ho]
-
-  selected_time_points = time_points
-
-  # TODO: Add a way to sample a portion of audio data
-  prior_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in prior_ho]
-  new_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in new_ho]
-
-  return selected_metadata, selected_time_points, prior_ho, \
-         new_ho, prior_audio, new_audio
-
 def sample_from_map(
     metadata, time_points, hit_objects, audio_data,
-    n_hit_objects=10, audio_secs=5, target_metadata=DEFAULT_METADATA):
+    config, target_metadata=DEFAULT_METADATA):
 
   selected_metadata = {}
   for key in target_metadata:
@@ -211,17 +200,26 @@ def sample_from_map(
     if value is not None:
       selected_metadata[key] = value
 
-  start_idx = np.random.randint(0, max(1, len(hit_objects) - n_hit_objects))
-  selected_hit_objects = hit_objects[start_idx:start_idx + n_hit_objects]
+  start_idx = np.random.randint(0, max(1, len(hit_objects) - config['max_hit_objects']))
+  selected_hit_objects = hit_objects[start_idx:start_idx + config['max_hit_objects']]
   if start_idx == 0:
     selected_hit_objects.insert(0, HIT_OBJECT_START_TOKEN)
-  if start_idx + n_hit_objects == len(hit_objects):
+    start_time = 0
+  else:
+    start_time = int(selected_hit_objects[0].split(',')[2])
+
+  if start_idx + config['max_hit_objects'] == len(hit_objects):
     selected_hit_objects.append(HIT_OBJECT_END_TOKEN)
+
   selected_time_points = time_points
 
-  # TODO: Add a way to sample a portion of audio data
-  selected_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in selected_hit_objects]
-
+  if audio_data is not None:
+    # TODO: Figure out what the end time for the audio should be
+    # selected_audio = audio_data[start_time:]
+    selected_audio = audio_data
+  else:
+    # selected_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in selected_hit_objects]
+    selected_audio = []
 
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio
@@ -375,6 +373,7 @@ def convert_to_relative_time(hit_objects, time_points):
   beat_lengths = [float(tp.split(',')[1]) for tp in time_points]
 
   time_point_idx = 0
+  ho_beat_lengths = []
   new_hit_objects = []
   for i in range(1, len(hit_objects)):
     if hit_objects[i] in (HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN):
@@ -398,8 +397,9 @@ def convert_to_relative_time(hit_objects, time_points):
     # Create the new hit object with the relative time string
     hit_object_data = hit_objects[i].split(',')
     new_hit_objects.append(','.join(hit_object_data[:2] + [time_diff_str] + hit_object_data[3:]))
+    ho_beat_lengths.append(beat_length)
 
-  return new_hit_objects
+  return new_hit_objects, ho_beat_lengths
 
 def get_relative_time_beats(hit_object):
   """
@@ -449,8 +449,7 @@ def add_hit_object_breaks(hit_objects, break_length):
   return new_hit_objects
 
 def format_training_data(
-  metadata, time_points, hit_objects, audio_data,
-  relative_timing=False, break_length=4):
+  metadata, time_points, hit_objects, audio_data, config):
   prior_str = '<Metadata>'
   for key, value in metadata.items():
     if key in DEFAULT_METADATA:
@@ -458,15 +457,18 @@ def format_training_data(
 
   f_time_points, slider_changes = format_time_points(time_points)
 
-  if relative_timing:
-    f_time_points, slider_changes = get_time_points_in_range(
-      f_time_points, hit_objects[1:], slider_changes)
-    hit_objects = convert_to_relative_time(hit_objects, f_time_points)
-    if break_length > 0:
-      hit_objects = add_hit_object_breaks(hit_objects, break_length)
-  else:
-    f_time_points, slider_changes = get_time_points_in_range(
-      f_time_points, hit_objects, slider_changes)
+  # if config['relative_timing']:
+  #   hit_objects = hit_objects[1:]
+
+  orig_hit_objects = hit_objects
+  f_time_points, slider_changes = get_time_points_in_range(
+    f_time_points, hit_objects, slider_changes)
+  r_hit_objects, bpms = convert_to_relative_time(hit_objects, f_time_points)
+
+  if config['relative_timing']:
+    hit_objects = r_hit_objects
+    if config['break_length'] > 0:
+      hit_objects = add_hit_object_breaks(hit_objects, config['break_length'])
 
   prior_str += '<TimePoints>'
   for tp in f_time_points:
@@ -477,23 +479,54 @@ def format_training_data(
     for sc in slider_changes:
       prior_str += f'<SliderChange>{sc}'
 
-  if audio_data:
-    prior_str += '<Audio>'
-    for audio in audio_data:
-      prior_str += f'<AudioSplit>{audio}'
-
   pred_str = ''
   f_hit_objects = format_hit_objects(hit_objects)
+  if config.get('max_hit_objects'):
+    f_hit_objects = f_hit_objects[:config.get('max_hit_objects')]
+
+  if audio_data != [] and audio_data is not None:
+    audio_segments = []
+    orig_ho_idx = 0
+    prev_ho_time = 0
+    for i in range(len(f_hit_objects)):
+      if f_hit_objects[i] == BREAK_TOKEN:
+        bpm = bpms[orig_ho_idx - 1]
+        ho_time = prev_ho_time + config['break_length'] * bpms[orig_ho_idx - 1]
+      else:
+        bpm = bpms[orig_ho_idx]
+        ho_time = get_hit_object_time(orig_hit_objects[orig_ho_idx], relative=False)
+        orig_ho_idx += 1
+        if ho_time == -1:
+          continue
+
+      start_idx = int(ho_time * config['sample_rate'] / 1000)
+      end_idx = int((ho_time + bpm * config['break_length']) * config['sample_rate'] / 1000)
+      segment = audio_data[start_idx:end_idx]
+
+      if end_idx > len(audio_data):
+        segment = np.concatenate([segment, np.zeros((end_idx - len(audio_data),))])
+      mel_bands = audio_to_np(
+        segment, config['segments_per_beat'] * config['break_length'],
+        n_mel_bands=config['n_mel_bands'], sample_rate=config['sample_rate'])
+      audio_segments.append(mel_bands)
+
+      prev_ho_time = ho_time
+    audio_segments = np.stack(audio_segments)
+  else:
+    audio_segments = None
+
+  n_audio_tokens = 0 if audio_segments is None else config['audio_tokens_per_segment']
   for ho in f_hit_objects:
     if ho in [HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN]:
       pred_str += ho
     else:
       pred_str += f'<HitObject>{ho}'
-  # print('='*100)
-  # print(prior_str)
-  # print('-'*50)
-  # print(pred_str)
-  return prior_str, pred_str
+    
+    if n_audio_tokens > 0 and ho != HIT_OBJECT_END_TOKEN:
+      pred_str += '<AudioSegment>'
+      pred_str += '<AudioPlaceholder>' * n_audio_tokens
+
+  return prior_str, pred_str, audio_segments
 
 
 if __name__ == '__main__':

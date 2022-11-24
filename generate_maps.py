@@ -62,8 +62,8 @@ if __name__ == '__main__':
     #   Save as file along with audio in output directory
     for beatmap_idx, beatmap in enumerate(dataset):
       metadata, time_points, hit_objects, audio_data = beatmap
-      src, tgt = format_training_data(
-        metadata, time_points, hit_objects, audio_data, config['relative_timing'])
+      src, tgt, audio_segments = format_training_data(
+        metadata, time_points, hit_objects, audio_data, config)
       tgt = HIT_OBJECT_START_TOKEN
 
       # Uncomment to use the first real hit object

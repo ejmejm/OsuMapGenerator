@@ -1,11 +1,13 @@
+import math
 import os
 
+from einops import rearrange
+import numpy as np
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-import math
-import numpy as np
+from preprocessing.data_loading import AUDIO_PLACEHOLDER_TOKEN
 
 
 def model_from_config(config, vocab):
@@ -17,7 +19,11 @@ def model_from_config(config, vocab):
         d_hid = config['d_hid'],
         n_encoder_layers = config['n_encoder_layers'],
         n_decoder_layers = config['n_decoder_layers'],
-        dropout = config['dropout']
+        dropout = config['dropout'],
+        segments_per_beat = config['segments_per_beat'],
+        audio_tokens_per_segment = config['audio_tokens_per_segment'],
+        n_mel_bands = config['n_mel_bands'],
+        include_audio = config['include_audio'],
     ).to(config['device'])
 
     if config['load_model'] and os.path.exists(config['model_save_path']):
@@ -27,15 +33,12 @@ def model_from_config(config, vocab):
 
 class DefaultTransformer(nn.Module):
     def __init__(self, n_token: int, d_model: int, n_head: int, d_hid: int,
-                 n_encoder_layers: int, n_decoder_layers: int, dropout: float = 0.5):
+                 n_encoder_layers: int, n_decoder_layers: int, dropout: float = 0.5,
+                 segments_per_beat: int = 8, audio_tokens_per_segment: int = 2,
+                 n_mel_bands: int = 80, include_audio=False):
         super().__init__()
 
-        self.audio_conv1 = nn.Conv1d(80, 16, 3)
-        self.audio_dropout = nn.Dropout1d(dropout)
-        self.audio_pool = nn.MaxPool1d(2)
-        self.audio_conv2 = nn.Conv1d(16, 32, 3)
-        self.audio_fc = nn.Linear(32 * 10, 128)
-
+        self.include_audio = include_audio
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(d_model, dropout)
         self.transformer = nn.Transformer(
@@ -43,6 +46,18 @@ class DefaultTransformer(nn.Module):
         self.embedding = nn.Embedding(n_token, d_model)
         self.d_model = d_model
         self.decoder = nn.Linear(d_model, n_token)
+
+        if self.include_audio:
+            self.audio_layers = nn.Sequential(
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=3),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=3),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, self.d_model, kernel_size=3),
+                nn.ReLU(),
+                nn.Dropout1d(dropout),
+                nn.AdaptiveAvgPool1d(audio_tokens_per_segment)
+            )
 
         self.init_weights()
 
@@ -53,7 +68,8 @@ class DefaultTransformer(nn.Module):
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
     def forward(self, src: Tensor, tgt: Tensor,
-                src_mask: Tensor = None, tgt_mask: Tensor = None) -> Tensor:
+                src_mask: Tensor = None, tgt_mask: Tensor = None,
+                audio: Tensor = None, audio_mask: Tensor = None) -> Tensor:
         """
         Args:
             src: Tensor, shape [seq_len, batch_size]
@@ -63,15 +79,19 @@ class DefaultTransformer(nn.Module):
         """
 
         # TODO: extract song as numpy array from src and use here + adjust the 16 as necessary
-        song = np.zeros((16, 80))
-        song = self.audio_pool(self.audio_dropout(F.relu(self.audio_conv1(song))))
-        song = self.audio_pool(F.relu(self.audio_conv2(song)))
-        song = torch.flatten(song, 1)
-        song = F.relu(self.audio_fc(song))
-        # 128 features, use them as you will
+        if self.include_audio and audio is not None:
+            audio_in_shape = audio.shape
+            print(audio_in_shape)
+            audio = rearrange(audio, 'b s c d -> (b s) c d')
+            audio_embeds = self.audio_layers(audio)
+            audio_embeds = rearrange(audio_embeds,
+                '(b s) c d -> b (s d) c', b=audio_in_shape[0], s=audio_in_shape[1])
 
         src = self.embedding(src) * math.sqrt(self.d_model)
         tgt = self.embedding(tgt) * math.sqrt(self.d_model)
+
+        print(tgt.shape, audio_embeds.shape, audio_mask.shape)
+        
 
         src = self.pos_encoder(src)
         tgt = self.pos_encoder(tgt)

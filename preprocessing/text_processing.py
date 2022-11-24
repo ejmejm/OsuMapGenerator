@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+import numpy as np
 import torch
 from torch.nn import functional as F
 import torchtext as tt
@@ -89,7 +90,6 @@ def prepare_tensor_seqs(src, tgt, preprocess_text, config):
   tgt_tensor, tgt_mask = prepare_tensor_seq(
     tgt, config['max_tgt_len'], preprocess_text, config)
   return src_tensor, tgt_tensor, src_mask, tgt_mask
-
 
 # The type of tokenizer depends on the config settings
 def get_tokenizer(config):
