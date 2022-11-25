@@ -18,7 +18,7 @@ MAX_HIT_OBJECTS = 100
 
 
 def eval(model, data_loader, preprocess_text, config):
-  losses = []
+  loss_hist = []
   model.eval()
   for batch in tqdm(data_loader):
     src_tensor, tgt_tensor, src_mask, tgt_mask, \
@@ -30,26 +30,29 @@ def eval(model, data_loader, preprocess_text, config):
         audio=audio_segments, audio_mask=audio_idxs)
     output = rearrange(output, 's b d -> b d s')
     target = rearrange(target, 's b -> b s')
+    audio_idxs = rearrange(audio_idxs, 's b -> b s')
+    audio_mask = ~audio_idxs
 
     with torch.no_grad():
-      loss = F.cross_entropy(output, target)
-    losses.append(loss.item())
+      losses = F.cross_entropy(output, target, reduction='none')
+      losses = losses.masked_select(audio_mask)
+      loss = losses.mean()
+    loss_hist.append(loss.item())
 
-  return losses
+  return loss_hist
   
 
 def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
   last_eval = 0
   curr_idx = 0
 
-  losses = []
+  loss_hist = []
   for epoch_idx in range(config['epochs']):
     for batch in (pbar := tqdm(train_loader)):
       model.train()
       src_tensor, tgt_tensor, src_mask, tgt_mask, \
       audio_segments, audio_idxs, target = \
         [x.to(config['device']) for x in batch]
-      print([x.shape for x in batch])
 
       # Pass the data through the model
       output = model(
@@ -59,12 +62,17 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       # Rearrange data to be batch first
       output = rearrange(output, 's b d -> b d s')
       target = rearrange(target, 's b -> b s')
+      audio_idxs = rearrange(audio_idxs, 's b -> b s')
+      audio_mask = ~audio_idxs
 
       # Calculate loss
-      loss = F.cross_entropy(output, target)
-      losses.append(loss.item())
+      losses = F.cross_entropy(output, target, reduction='none')
+      losses = losses.masked_select(audio_mask)
+      loss = losses.mean()
+      
+      loss_hist.append(loss.item())
       pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item():.3f}')
-      log({'epoch': epoch_idx, 'train_loss': losses[-1]}, config)
+      log({'epoch': epoch_idx, 'train_loss': loss_hist[-1]}, config)
       
       # Backprop
       optimizer.zero_grad()
@@ -96,7 +104,8 @@ if __name__ == '__main__':
   
   # Get data loaders
   preprocess_text, vocab = get_text_preprocessor(config)
-  train_loader, val_loader, test_loader = get_dataloaders(config)
+  train_loader, val_loader, test_loader = get_dataloaders(
+    config, preprocess=True)
   # print(vocab.get_itos())
 
   # Create model and load when applicable

@@ -34,7 +34,7 @@ load_model: False
 # Training
 lr: 0.0003
 epochs: 10
-batch_size: 8
+batch_size: 2
 dropout: 0
 eval_freq: 10000 # In number of samples
 val_split: 0.01
@@ -42,7 +42,7 @@ test_split: 0.05
 max_hit_objects: 100
 
 # Audio
-segments_per_beat: 12 # Determines input to convolution
+segments_per_beat: 16 # Determines input to convolution
 audio_tokens_per_segment: 2 # Determines convolution size
 n_mel_bands: 80
 sample_rate: 44100 # Currently not actually being used

@@ -13,7 +13,8 @@ import torch
 WINDOW = None
 SPECTRUM = None
 MEL = None
-
+FRAME_SIZE = None
+TARGET_FRAME_SIZE = 1536
 
 def process_song(song_name, config):
     '''
@@ -69,9 +70,10 @@ def create_analyzers(fs=44100.0,
                      mel_nband=80,
                      mel_freqlo=27.5,
                      mel_freqhi=16000.0,
-                     input_size=None):
-
-    window = Windowing(size=nffts[0], type='blackmanharris62')
+                     input_size=None,
+                     zero_padding=0):
+    window = Windowing(
+        size=nffts[0], type='blackmanharris62', zeroPadding=zero_padding)
     spectrum = Spectrum(size=nffts[0])
     mel = MelBands(inputSize=input_size or (nffts[0] // 2) + 1,
                     numberBands=mel_nband,
@@ -126,22 +128,44 @@ def filter_song(file_name = None, dir_name = None):
     return feats_list
 
 def audio_to_np(segment, n_splits=1, n_mel_bands=80, sample_rate=44100):
-    global WINDOW, SPECTRUM, MEL
-
-    if WINDOW is None:
-        # TODO: Pass sample rate into `create_analyzers`
-        WINDOW, SPECTRUM, MEL = create_analyzers(
-            fs=sample_rate, mel_nband=n_mel_bands)
+    global WINDOW, SPECTRUM, MEL, FRAME_SIZE
     
     # Pad to make all segments the same length
     padding_size = int(np.ceil(len(segment) / n_splits) * n_splits - len(segment))
     segment = np.pad(segment, (0, padding_size), 'constant')
-    feats_list = np.split(segment, n_splits)
+    feats_list = np.split(segment.astype(np.float32), n_splits)
+    # All windows must have an even length, truncate where needed
+    feats_list = [f if len(f) % 2 == 0 else f[:-1] for f in feats_list]
+
+    frame_size = len(feats_list[0])
+
+    # Normalize all segments to be the same size with 0 padding except
+    # for the special case where they are greater than the target size,
+    # then recreate all the analyzers
+    if WINDOW is None:
+        if frame_size > TARGET_FRAME_SIZE:
+            WINDOW, SPECTRUM, MEL = create_analyzers(
+                nffts=[frame_size], fs=sample_rate, mel_nband=n_mel_bands)
+        else:
+            WINDOW, SPECTRUM, MEL = create_analyzers(
+                nffts=[TARGET_FRAME_SIZE], fs=sample_rate, mel_nband=n_mel_bands,
+                zero_padding=TARGET_FRAME_SIZE-frame_size)
+    elif frame_size != FRAME_SIZE:
+        if frame_size > TARGET_FRAME_SIZE:
+            WINDOW, SPECTRUM, MEL = create_analyzers(
+                nffts=[frame_size], fs=sample_rate, mel_nband=n_mel_bands)
+        elif FRAME_SIZE > TARGET_FRAME_SIZE:
+            WINDOW, SPECTRUM, MEL = create_analyzers(
+                nffts=[TARGET_FRAME_SIZE], fs=sample_rate, mel_nband=n_mel_bands,
+                zero_padding=TARGET_FRAME_SIZE-frame_size)
+        else:
+            WINDOW = Windowing(
+                size=TARGET_FRAME_SIZE, type='blackmanharris62',
+                zeroPadding=TARGET_FRAME_SIZE-frame_size)
+    FRAME_SIZE = frame_size
 
     for i in range(len(feats_list)):
-        if len(feats_list[i]) % 2 == 1:
-            feats_list[i] = feats_list[i][:-1]
-        feats_list[i] = WINDOW(feats_list[i].astype(np.float32))
+        feats_list[i] = WINDOW(feats_list[i])
         feats_list[i] = SPECTRUM(feats_list[i])
         feats_list[i] = MEL(feats_list[i])
 

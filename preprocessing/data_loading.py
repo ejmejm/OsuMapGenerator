@@ -153,6 +153,8 @@ class OsuDataset(Dataset):
       # TODO: Delete beatmaps with bad audio in preprocessing
       # Curretly takes ~200-1000ms to load a song
       audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
+      # print(audio_data)
+      # RuntimeError: Error while configuring MelBands: TriangularBands: the number of spectrum bins is insufficient for the specified number of triangular bands. Use zero padding to increase the number of FFT bins.
     else:
       audio_data = None
 
@@ -167,10 +169,10 @@ class OsuDataset(Dataset):
 # Get dataloaders for training test and validation
 def get_dataloaders(config, preprocess=False, shuffle=True):
   # If preprocess_text is passed in, all the preprocessing is done in the dataloader
-  if preprocess is None:
-    collate_fn = lambda x: x
-  else:
+  if preprocess:
     collate_fn = map_to_train_collate
+  else:
+    collate_fn = lambda x: x
 
   dataset = OsuDataset(config, preprocess=preprocess)
 
