@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+import numpy as np
 import torch
 from torch.nn import functional as F
 import torchtext as tt
@@ -31,6 +32,14 @@ def default_tokenize(string):
         tokens.append(char)
   return tokens
 
+class StandardNumericalizer():
+  def __init__(self, vocab):
+    self.vocab = vocab
+
+  def __call__(self, string):
+    tokens = default_tokenize(string)
+    return self.vocab(tokens)
+
 def get_text_preprocessor(config):
   """Returns a function that turns text into a list of numerical tokens."""
   if config['tokenizer_type'] == 'sentencepiece':
@@ -43,13 +52,9 @@ def get_text_preprocessor(config):
     # Load file with torch
     vocab = torch.load(vocab_path)
 
-    def numericalize(string):
-      tokens = default_tokenize(string)
-      return vocab(tokens)
+    return StandardNumericalizer(vocab), vocab
 
-    return numericalize, vocab
-
-def prepare_tensor_seq(seq, max_len, preprocess_text, config, pad=True):
+def prepare_tensor_seq(seq, max_len, preprocess_text, config, pad=True, device=None):
   """Converts to tensor, pads, and send to device.
   
   Args:
@@ -67,15 +72,15 @@ def prepare_tensor_seq(seq, max_len, preprocess_text, config, pad=True):
     if pad:
       pad_len = max_len - len(seq_tensors[-1])
       seq_tensors[-1] = F.pad(seq_tensors[-1], (0, pad_len), value=PAD_TOKEN)
-  seq_tensor = torch.stack(seq_tensors).to(config['device'])
+  seq_tensor = torch.stack(seq_tensors).to(device or config['device'])
   
   # Sequence dim first
   seq_tensor = seq_tensor.transpose(0, 1)
-  seq_mask = gen_seq_mask(seq_tensor.shape[0]).to(config['device'])
+  seq_mask = gen_seq_mask(seq_tensor.shape[0]).to(device or config['device'])
 
   return seq_tensor, seq_mask
 
-def prepare_tensor_seqs(src, tgt, preprocess_text, config):
+def prepare_tensor_seqs(src, tgt, preprocess_text, config, device=None):
   """Converts to tensor, pads, and send to device.
   
   Args:
@@ -85,11 +90,10 @@ def prepare_tensor_seqs(src, tgt, preprocess_text, config):
     config: Dict of config parameters
   """
   src_tensor, src_mask = prepare_tensor_seq(
-    src, config['max_src_len'], preprocess_text, config)
+    src, config['max_src_len'], preprocess_text, config, device=device)
   tgt_tensor, tgt_mask = prepare_tensor_seq(
-    tgt, config['max_tgt_len'], preprocess_text, config)
+    tgt, config['max_tgt_len'], preprocess_text, config, device=device)
   return src_tensor, tgt_tensor, src_mask, tgt_mask
-
 
 # The type of tokenizer depends on the config settings
 def get_tokenizer(config):

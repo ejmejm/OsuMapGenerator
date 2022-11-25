@@ -7,8 +7,9 @@ from tqdm import tqdm
 
 from models import model_from_config
 from preprocessing.data_loading import get_dataloaders, sample_from_map
-from preprocessing.data_loading import format_training_data
+from preprocessing.data_loading import format_training_data, AUDIO_PLACEHOLDER_TOKEN
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
+from preprocessing.audio_processing import prepare_audio_tensor
 from utils import load_config, log, parse_args
 
 
@@ -17,65 +18,61 @@ MAX_HIT_OBJECTS = 100
 
 
 def eval(model, data_loader, preprocess_text, config):
-  losses = []
+  loss_hist = []
   model.eval()
   for batch in tqdm(data_loader):
-    batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
-    training_samples = [format_training_data(
-      *map, config['relative_timing'], config['break_length']) \
-      for map in batch_samples]
-
-    src, tgt = zip(*training_samples)
-    src_tensor, tgt_tensor, src_mask, tgt_mask = prepare_tensor_seqs(src, tgt, preprocess_text, config)
-    target = tgt_tensor[1:]
-    tgt_tensor = tgt_tensor[:-1]
-    tgt_mask = tgt_mask[:-1, :-1]
+    src_tensor, tgt_tensor, src_mask, tgt_mask, \
+    audio_segments, audio_idxs, target = batch
 
     with torch.no_grad():
-      output = model(src_tensor, tgt_tensor, src_mask, tgt_mask)
+      output = model(
+        src_tensor, tgt_tensor, src_mask, tgt_mask,
+        audio=audio_segments, audio_mask=audio_idxs)
     output = rearrange(output, 's b d -> b d s')
     target = rearrange(target, 's b -> b s')
+    audio_idxs = rearrange(audio_idxs, 's b -> b s')
+    audio_mask = ~audio_idxs
 
     with torch.no_grad():
-      loss = F.cross_entropy(output, target)
-    losses.append(loss.item())
+      losses = F.cross_entropy(output, target, reduction='none')
+      losses = losses.masked_select(audio_mask)
+      loss = losses.mean()
+    loss_hist.append(loss.item())
 
-  return losses
+  return loss_hist
   
 
 def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
   last_eval = 0
   curr_idx = 0
 
-  losses = []
+  loss_hist = []
   for epoch_idx in range(config['epochs']):
     for batch in (pbar := tqdm(train_loader)):
       model.train()
-      batch_samples = [sample_from_map(*map, n_hit_objects=MAX_HIT_OBJECTS) for map in batch]
-      training_samples = [format_training_data(
-        *map, config['relative_timing'], config['break_length']) \
-        for map in batch_samples]
-
-      src, tgt = zip(*training_samples)
-      # Convert text to numerical tensors with padding and corresponding masks
-      src_tensor, tgt_tensor, src_mask, tgt_mask = \
-        prepare_tensor_seqs(src, tgt, preprocess_text, config)
-      # Split the tgt tensor into the input and actual target
-      target = tgt_tensor[1:]
-      tgt_tensor = tgt_tensor[:-1]
-      tgt_mask = tgt_mask[:-1, :-1]
+      src_tensor, tgt_tensor, src_mask, tgt_mask, \
+      audio_segments, audio_idxs, target = \
+        [x.to(config['device']) for x in batch]
 
       # Pass the data through the model
-      output = model(src_tensor, tgt_tensor, src_mask, tgt_mask)
+      output = model(
+        src_tensor, tgt_tensor, src_mask, tgt_mask,
+        audio=audio_segments, audio_mask=audio_idxs)
+        
       # Rearrange data to be batch first
       output = rearrange(output, 's b d -> b d s')
       target = rearrange(target, 's b -> b s')
+      audio_idxs = rearrange(audio_idxs, 's b -> b s')
+      audio_mask = ~audio_idxs
 
       # Calculate loss
-      loss = F.cross_entropy(output, target)
-      losses.append(loss.item())
+      losses = F.cross_entropy(output, target, reduction='none')
+      losses = losses.masked_select(audio_mask)
+      loss = losses.mean()
+      
+      loss_hist.append(loss.item())
       pbar.set_description(f'Epoch {epoch_idx} | Loss: {loss.item():.3f}')
-      log({'epoch': epoch_idx, 'train_loss': losses[-1]}, config)
+      log({'epoch': epoch_idx, 'train_loss': loss_hist[-1]}, config)
       
       # Backprop
       optimizer.zero_grad()
@@ -106,10 +103,10 @@ if __name__ == '__main__':
     wandb.init(project=config['wandb_project'], config=config)
   
   # Get data loaders
-  train_loader, val_loader, test_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'),
-    val_split=config.get('val_split'), test_split=config.get('test_split'))
   preprocess_text, vocab = get_text_preprocessor(config)
+  train_loader, val_loader, test_loader = get_dataloaders(
+    config, preprocess=True)
+  # print(vocab.get_itos())
 
   # Create model and load when applicable
   model = model_from_config(config, vocab)

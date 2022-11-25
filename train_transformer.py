@@ -32,7 +32,7 @@ def eval(model, data_loader, preprocess_text, config):
   for batch in tqdm(data_loader):
     if not config.get('use_vqvae'):
       batch_samples = [sample_from_map(*map) for map in batch]
-      training_samples = [format_training_data(*map) for map in batch_samples]
+      training_samples = [format_training_data(*map, config) for map in batch_samples]
 
       src, tgt = zip(*training_samples)
       # Convert text to numerical tensors with padding and corresponding masks
@@ -99,7 +99,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       model.train()
       if not config.get('use_vqvae'):
         batch_samples = [sample_from_map(*map) for map in batch]
-        training_samples = [format_training_data(*map) for map in batch_samples]
+        training_samples = [format_training_data(*map, config) for map in batch_samples]
 
         src, tgt = zip(*training_samples)
         # Convert text to numerical tensors with padding and corresponding masks

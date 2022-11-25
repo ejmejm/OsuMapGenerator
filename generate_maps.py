@@ -45,7 +45,7 @@ if __name__ == '__main__':
     elif args.n_maps is not None:
       map_ids = np.random.choice(list(song_mapping.keys()), args.n_maps)
 
-    dataset = OsuDataset(config['beatmap_path'], map_ids=map_ids)
+    dataset = OsuDataset(config, map_ids=map_ids)
     preprocess_text, vocab = get_text_preprocessor(config)
     model = model_from_config(config, vocab)
 
@@ -62,8 +62,8 @@ if __name__ == '__main__':
     #   Save as file along with audio in output directory
     for beatmap_idx, beatmap in enumerate(dataset):
       metadata, time_points, hit_objects, audio_data = beatmap
-      src, tgt = format_training_data(
-        metadata, time_points, hit_objects, audio_data, config['relative_timing'])
+      src, tgt, audio_segments = format_training_data(
+        metadata, time_points, hit_objects, audio_data, config)
       tgt = HIT_OBJECT_START_TOKEN
 
       # Uncomment to use the first real hit object
