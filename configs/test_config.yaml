@@ -45,7 +45,4 @@ max_hit_objects: 100
 segments_per_beat: 16 # Determines input to convolution
 audio_tokens_per_segment: 2 # Determines convolution size
 n_mel_bands: 80
-sample_rate: 44100 # Currently not actually being used
-# segment_length: 23 # Audio segmentation size
-# prev_audio_segments_per_hitobject: 15 # How many previous audio segments to consider for the acoompanying audio signal of each hit object
-# next_audio_segments_per_hitobject: 0 # Same but for next
+sample_rate: 44100

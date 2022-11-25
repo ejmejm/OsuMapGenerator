@@ -298,7 +298,7 @@ def get_time_points_in_range(time_points, hit_objects, slider_changes=None):
   selected_time_points = selected_time_points[::-1]
 
   if len(selected_time_points) == 0:
-    selected_time_points = time_points[0]
+    selected_time_points = [time_points[0]]
 
   first_time_step = float(selected_time_points[0].split(',')[0])
 
