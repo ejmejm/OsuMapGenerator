@@ -47,9 +47,11 @@ class DefaultTransformer(nn.Module):
 
         if self.include_audio:
             self.audio_layers = nn.Sequential(
-                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=3),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=7, stride=3),
                 nn.ReLU(),
-                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=3),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=2),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=4),
                 nn.ReLU(),
                 nn.Conv1d(n_mel_bands, self.d_model, kernel_size=3),
                 nn.ReLU(),
