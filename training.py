@@ -1,15 +1,12 @@
 from einops import rearrange
 import numpy as np
 import torch
-from torch import nn
 from torch.nn import functional as F
 from tqdm import tqdm
 
 from models import model_from_config
-from preprocessing.data_loading import get_dataloaders, sample_from_map
-from preprocessing.data_loading import format_training_data, AUDIO_PLACEHOLDER_TOKEN
-from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
-from preprocessing.audio_processing import prepare_audio_tensor
+from preprocessing.data_loading import get_dataloaders
+from preprocessing.text_processing import get_text_preprocessor
 from utils import load_config, log, parse_args
 
 
@@ -22,7 +19,8 @@ def eval(model, data_loader, preprocess_text, config):
   model.eval()
   for batch in tqdm(data_loader):
     src_tensor, tgt_tensor, src_mask, tgt_mask, \
-    audio_segments, audio_idxs, target = batch
+    audio_segments, audio_idxs, target = \
+      [None if x is None else x.to(config['device']) for x in batch]
 
     with torch.no_grad():
       output = model(
@@ -30,13 +28,16 @@ def eval(model, data_loader, preprocess_text, config):
         audio=audio_segments, audio_mask=audio_idxs)
     output = rearrange(output, 's b d -> b d s')
     target = rearrange(target, 's b -> b s')
-    audio_idxs = rearrange(audio_idxs, 's b -> b s')
-    audio_mask = ~audio_idxs
 
     with torch.no_grad():
       losses = F.cross_entropy(output, target, reduction='none')
+
+    if config['include_audio']:
+      audio_idxs = rearrange(audio_idxs, 's b -> b s')
+      audio_mask = ~audio_idxs
       losses = losses.masked_select(audio_mask)
-      loss = losses.mean()
+
+    loss = losses.mean()
     loss_hist.append(loss.item())
 
   return loss_hist
@@ -52,7 +53,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       model.train()
       src_tensor, tgt_tensor, src_mask, tgt_mask, \
       audio_segments, audio_idxs, target = \
-        [x.to(config['device']) for x in batch]
+        [None if x is None else x.to(config['device']) for x in batch]
 
       # Pass the data through the model
       output = model(
@@ -62,12 +63,16 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       # Rearrange data to be batch first
       output = rearrange(output, 's b d -> b d s')
       target = rearrange(target, 's b -> b s')
-      audio_idxs = rearrange(audio_idxs, 's b -> b s')
-      audio_mask = ~audio_idxs
 
       # Calculate loss
       losses = F.cross_entropy(output, target, reduction='none')
-      losses = losses.masked_select(audio_mask)
+
+      # Mask out losses for audio tokens
+      if config['include_audio']:
+        audio_idxs = rearrange(audio_idxs, 's b -> b s')
+        audio_mask = ~audio_idxs
+        losses = losses.masked_select(audio_mask)
+
       loss = losses.mean()
       
       loss_hist.append(loss.item())

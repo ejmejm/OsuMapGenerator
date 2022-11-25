@@ -5,10 +5,7 @@ import sys
 import os
 import random
 from essentia.standard import MonoLoader, Windowing, Spectrum, MelBands
-from collections import deque
-from zipfile import ZipFile
 import torch
-
 
 WINDOW = None
 SPECTRUM = None

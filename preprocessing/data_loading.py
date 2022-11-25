@@ -1,19 +1,17 @@
-from decimal import Decimal, getcontext
+from decimal import Decimal
 import os
 import re
 import warnings
 
-from preprocessing.audio_processing import prepare_audio_tensor, process_song, load_audio, audio_to_np
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
-from utils import load_config
-from pydub.exceptions import CouldntDecodeError
-
+from preprocessing.audio_processing import prepare_audio_tensor, audio_to_np
 from essentia.standard import MonoLoader
+
 import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, utils
+
 
 VERSION_PATTERN = r'osu file format v(\d+)(?://.*)?$'
 METADATA_ENTRY_PATTERN = r'^([a-zA-Z]+):(.+?)(?://.*)?$'
@@ -31,6 +29,7 @@ DEFAULT_METADATA = set([
   'BeatDivisor', 'GridSize', 'CircleSize', 'OverallDifficulty', 'ApproachRate',
   'SliderMultiplier', 'SliderTickRate', 'HPDrainRate', 'FormatVersion'
 ])
+
 
 
 def load_beatmap_data(path):
@@ -153,8 +152,6 @@ class OsuDataset(Dataset):
       # TODO: Delete beatmaps with bad audio in preprocessing
       # Curretly takes ~200-1000ms to load a song
       audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
-      # print(audio_data)
-      # RuntimeError: Error while configuring MelBands: TriangularBands: the number of spectrum bins is insufficient for the specified number of triangular bands. Use zero padding to increase the number of FFT bins.
     else:
       audio_data = None
 
@@ -571,7 +568,9 @@ def map_to_train_collate(batch):
   cat_dims = [1, 1, None, None, 0, 1, 1] # Dimensions to concatenate
   out_data = []
   for tensors, dim in zip(zip(*batch), cat_dims):
-    if dim is None:
+    if tensors[0] is None:
+      out_data.append(None)
+    elif dim is None:
       out_data.append(tensors[0])
     else:
       out_data.append(torch.cat(tensors, dim))

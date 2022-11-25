@@ -8,7 +8,6 @@ from torch.nn import functional as F
 import torchtext as tt
 
 from models import gen_seq_mask
-from utils import load_config
 
 
 def default_tokenize(string):
