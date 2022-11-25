@@ -45,7 +45,7 @@ if __name__ == '__main__':
     elif args.n_maps is not None:
       map_ids = np.random.choice(list(song_mapping.keys()), args.n_maps)
 
-    dataset = OsuDataset(config['beatmap_path'], map_ids=map_ids)
+    dataset = OsuDataset(config, map_ids=map_ids)
     preprocess_text, vocab = get_text_preprocessor(config)
     model = model_from_config(config, vocab)
 

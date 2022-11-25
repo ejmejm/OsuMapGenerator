@@ -21,18 +21,13 @@ def eval(model, data_loader, preprocess_text, config):
   losses = []
   model.eval()
   for batch in tqdm(data_loader):
-    batch_samples = [sample_from_map(*map, config) for map in batch]
-    context_str, target_str, audio_segemnts = [
-      format_training_data(*map, config) for map in batch_samples]
-
-    src, tgt = zip(context_str, target_str)
-    src_tensor, tgt_tensor, src_mask, tgt_mask = prepare_tensor_seqs(src, tgt, preprocess_text, config)
-    target = tgt_tensor[1:]
-    tgt_tensor = tgt_tensor[:-1]
-    tgt_mask = tgt_mask[:-1, :-1]
+    src_tensor, tgt_tensor, src_mask, tgt_mask, \
+    audio_segments, audio_idxs, target = batch
 
     with torch.no_grad():
-      output = model(src_tensor, tgt_tensor, src_mask, tgt_mask)
+      output = model(
+        src_tensor, tgt_tensor, src_mask, tgt_mask,
+        audio=audio_segments, audio_mask=audio_idxs)
     output = rearrange(output, 's b d -> b d s')
     target = rearrange(target, 's b -> b s')
 
@@ -51,30 +46,16 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
   for epoch_idx in range(config['epochs']):
     for batch in (pbar := tqdm(train_loader)):
       model.train()
-      batch_samples = [sample_from_map(*map, config) for map in batch]
-      training_samples = [format_training_data(*map, config) for map in batch_samples]
-
-      src, tgt, audio_segments = zip(*training_samples)
-      # Convert text to numerical tensors with padding and corresponding masks
-      src_tensor, tgt_tensor, src_mask, tgt_mask = \
-        prepare_tensor_seqs(src, tgt, preprocess_text, config)
-      # Split the tgt tensor into the input and actual target
-      target = tgt_tensor[1:]
-      tgt_tensor = tgt_tensor[:-1]
-      tgt_mask = tgt_mask[:-1, :-1]
-
-      if audio_segments is not None and config['include_audio']:
-        audio_segments = prepare_audio_tensor(
-          audio_segments, config)
-        audio_token_id = preprocess_text(AUDIO_PLACEHOLDER_TOKEN)[0]
-        audio_idxs = tgt_tensor == audio_token_id
-      else:
-        audio_segments = None
+      src_tensor, tgt_tensor, src_mask, tgt_mask, \
+      audio_segments, audio_idxs, target = \
+        [x.to(config['device']) for x in batch]
+      print([x.shape for x in batch])
 
       # Pass the data through the model
       output = model(
         src_tensor, tgt_tensor, src_mask, tgt_mask,
         audio=audio_segments, audio_mask=audio_idxs)
+        
       # Rearrange data to be batch first
       output = rearrange(output, 's b d -> b d s')
       target = rearrange(target, 's b -> b s')
@@ -114,11 +95,9 @@ if __name__ == '__main__':
     wandb.init(project=config['wandb_project'], config=config)
   
   # Get data loaders
-  train_loader, val_loader, test_loader = get_dataloaders(
-    config['beatmap_path'], batch_size=config.get('batch_size'),
-    val_split=config.get('val_split'), test_split=config.get('test_split'),
-    n_load_workers=config.get('n_load_workers', 0))
   preprocess_text, vocab = get_text_preprocessor(config)
+  train_loader, val_loader, test_loader = get_dataloaders(config)
+  # print(vocab.get_itos())
 
   # Create model and load when applicable
   model = model_from_config(config, vocab)

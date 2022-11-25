@@ -151,11 +151,11 @@ def audio_to_np(segment, n_splits=1, n_mel_bands=80, sample_rate=44100):
     feats_arr = np.log(feats_arr + 1e-16)
     return feats_arr
 
-def prepare_audio_tensor(audio, config):
+def prepare_audio_tensor(audio, config, device=None):
   audio = [np.pad(
     a, ((0, config['max_hit_objects'] - len(a)), (0, 0), (0, 0))) \
     for a in audio]
   audio = torch.from_numpy(np.stack(audio)).float()
-  audio = audio.to(config['device'])
+  audio = audio.to(device or config['device'])
   audio = audio.transpose(2, 3) # (batch, n_tokens, channel, audio_len)
   return audio

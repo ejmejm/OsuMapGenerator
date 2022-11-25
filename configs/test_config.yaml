@@ -15,7 +15,7 @@ tokenizer_type: default # sentencepiece
 spm_vocab_size: 1000 # Only used if using sentencepiece
 relative_timing: True
 break_length: 4 # How many beats without a hit object before breaks appear
-n_load_workers: 0
+n_load_workers: 2
 include_audio: True
 
 # Model
@@ -34,7 +34,7 @@ load_model: False
 # Training
 lr: 0.0003
 epochs: 10
-batch_size: 2
+batch_size: 8
 dropout: 0
 eval_freq: 10000 # In number of samples
 val_split: 0.01

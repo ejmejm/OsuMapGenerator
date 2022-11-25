@@ -3,7 +3,8 @@ import os
 import re
 import warnings
 
-from preprocessing.audio_processing import process_song, load_audio, audio_to_np
+from preprocessing.audio_processing import prepare_audio_tensor, process_song, load_audio, audio_to_np
+from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
 from utils import load_config
 from pydub.exceptions import CouldntDecodeError
 
@@ -111,18 +112,21 @@ def load_beatmap_data(path):
 
   return metadata, timing_points, hit_objects
 
-# TODO: Add breaks to dataset
 class OsuDataset(Dataset):
-  def __init__(self, root_dir, include_audio=True, map_ids=None, sample_rate=44100):
-    self.root_dir = root_dir
-    self.sample_rate = sample_rate
-    self.include_audio = include_audio
-    self.map_dir = os.path.join(root_dir, 'maps')
-    self.audio_dir = os.path.join(root_dir, 'songs')
+  def __init__(self, config, map_ids=None, preprocess=False):
+    self.config = config
+    self.root_dir = config['beatmap_path']
+    self.sample_rate = config['sample_rate']
+    self.preprocess = preprocess
+    self.include_audio = config['include_audio']
+    self.preprocess_text = get_text_preprocessor(config)[0]
+
+    self.map_dir = os.path.join(self.root_dir, 'maps')
+    self.audio_dir = os.path.join(self.root_dir, 'songs')
   
     # Mapping of map_id to song_id
     self.mapping = pd.read_csv(
-      os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
+      os.path.join(self.root_dir, 'song_mapping.csv'), index_col=0)
     self.mapping = self.mapping.to_dict()['song']
     if map_ids is not None:
       new_mapping = {}
@@ -145,44 +149,51 @@ class OsuDataset(Dataset):
     metadata, time_points, hit_objects = load_beatmap_data(
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
-      # TODO: Add audio loading here
       audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
-      # Curretly takes ~200-1000ms to load a song
-      # audio_data = load_audio(audio_path)
       # TODO: Delete beatmaps with bad audio in preprocessing
+      # Curretly takes ~200-1000ms to load a song
       audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
-      # processed_audio = process_song(os.path.join(self.audio_dir, self.mapping[idx]), config)
-      # audio_data = np.frombuffer(buffer=processed_audio, dtype=np.float32, count=-1)
-      # audio_data = audio_data[0:processed_audio.shape[0]*processed_audio.shape[1]]
-      # audio_data = np.reshape(audio_data, processed_audio.shape)
     else:
       audio_data = None
+
+    if self.preprocess:
+      out = map_to_train_data(
+        (metadata, time_points, hit_objects, audio_data),
+        self.preprocess_text, self.config, device='cpu')
+      return out
 
     return metadata, time_points, hit_objects, audio_data
 
 # Get dataloaders for training test and validation
-def get_dataloaders(root_dir, batch_size=1, include_audio=True,
-                    val_split=0.05, test_split=0.1, shuffle=True,
-                    n_load_workers=0):
-  dataset = OsuDataset(root_dir, include_audio=include_audio)
+def get_dataloaders(config, preprocess=False, shuffle=True):
+  # If preprocess_text is passed in, all the preprocessing is done in the dataloader
+  if preprocess is None:
+    collate_fn = lambda x: x
+  else:
+    collate_fn = map_to_train_collate
+
+  dataset = OsuDataset(config, preprocess=preprocess)
+
   # Split dataset into train, val, and test
-  val_size = int(val_split * len(dataset))
-  test_size = int(test_split * len(dataset))
+  val_size = int(config['val_split'] * len(dataset))
+  test_size = int(config['test_split'] * len(dataset))
   train_size = len(dataset) - val_size - test_size
 
   train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
     dataset, [train_size, val_size, test_size])
 
-  collate_fn = lambda x: x
+  if config['n_load_workers'] > 0:
+    torch.multiprocessing.set_start_method('spawn')
+
   train_loader = DataLoader(
-    train_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn,
-    num_workers=n_load_workers)
+    train_dataset, batch_size=config['batch_size'], shuffle=shuffle, collate_fn=collate_fn,
+    num_workers=config['n_load_workers'])
   val_loader = DataLoader(
-    val_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn,
-    num_workers=n_load_workers)
+    val_dataset, batch_size=config['batch_size'], shuffle=shuffle, collate_fn=collate_fn,
+    num_workers=config['n_load_workers'])
   test_loader = DataLoader(
-    test_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn,
-    num_workers=n_load_workers)
+    test_dataset, batch_size=config['batch_size'], shuffle=shuffle, collate_fn=collate_fn,
+    num_workers=config['n_load_workers'])
 
   return train_loader, val_loader, test_loader
 
@@ -528,6 +539,42 @@ def format_training_data(
 
   return prior_str, pred_str, audio_segments
 
+def map_to_train_data(map, preprocess_text, config, device=None):
+  batch_samples = [sample_from_map(*m, config) for m in [map]]
+  training_samples = [format_training_data(*m, config) for m in batch_samples]
+
+  src, tgt, audio_segments = zip(*training_samples)
+  # Convert text to numerical tensors with padding and corresponding masks
+  src_tensor, tgt_tensor, src_mask, tgt_mask = \
+    prepare_tensor_seqs(src, tgt, preprocess_text, config, device=device)
+  # Split the tgt tensor into the input and actual target
+  target = tgt_tensor[1:]
+  tgt_tensor = tgt_tensor[:-1]
+  tgt_mask = tgt_mask[:-1, :-1]
+
+  if audio_segments is not None and config['include_audio']:
+    audio_segments = prepare_audio_tensor(
+      audio_segments, config, device=device)
+    audio_token_id = preprocess_text(AUDIO_PLACEHOLDER_TOKEN)[0]
+    audio_idxs = tgt_tensor == audio_token_id
+    audio_idxs = audio_idxs.to(device or config['device'])
+  else:
+    audio_segments = None
+    audio_idxs = None
+
+  return src_tensor, tgt_tensor, src_mask, tgt_mask, \
+         audio_segments, audio_idxs, target
+
+def map_to_train_collate(batch):
+  cat_dims = [1, 1, None, None, 0, 1, 1] # Dimensions to concatenate
+  out_data = []
+  for tensors, dim in zip(zip(*batch), cat_dims):
+    if dim is None:
+      out_data.append(tensors[0])
+    else:
+      out_data.append(torch.cat(tensors, dim))
+
+  return tuple(out_data)
 
 if __name__ == '__main__':
   # dataset = OsuDataset('../data/formatted_beatmaps/')
