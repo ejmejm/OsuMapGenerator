@@ -16,21 +16,24 @@ MEL = None
 FRAME_SIZE = None
 TARGET_FRAME_SIZE = 1536
 
-def process_song(song_name, config):
+def process_song(song_name, config, output_dir):
     '''
     process the given song, analyze it, then create a chart for it
     Usage: audio_processing.py song_file.mp3
     '''
 
-    dir_name = song_name + " segments"
+    file_name = song_name.split('/')[-1]
+    file_name = file_name.split('.', 1)[0]
 
-    song = song_name[:len(song_name) - 4]
-    npy_file = song + " Input.npy"
+    dir_name = os.path.join(output_dir, file_name)
+
+    npy_file = os.path.join(dir_name, "input.npy")
     dir_list = os.listdir()
 
     if dir_name not in dir_list:
         print("Segmenting song..")
-        segment_song(song_name, config['segment_length'])
+        os.makedirs(dir_name, exist_ok = True)
+        # segment_song(song_name, output_dir, config['segment_length'])
     else:
         print("Song already segmented, moving on..")
 
@@ -43,26 +46,28 @@ def load_audio(audio_path, start_time=None, duration=None):
     return AudioSegment.from_file(
         audio_path, 'mp3', start_second=start_time, duration=duration)
 
-def segment_song(song_name, seg_length):
-    no_prefix = song_name[:len(song_name) - 4]
-    song = AudioSegment.from_mp3(song_name)
-    directory_name = song_name + " segments"
+def segment_song(song_name, output_dir, seg_length):
+    file_name = song_name.split('/')[-1]
+    file_name = file_name.split('.', 1)[0]
 
-    os.mkdir(directory_name)
+    song = AudioSegment.from_mp3(song_name)
+    directory_name = os.path.join(output_dir, "segments")
+
+    os.makedirs(directory_name, exist_ok = True)
 
     i = 1
     current_segment = song[:seg_length]
-    current_segment.export(directory_name + "/" + no_prefix + ' ' + str(i) + ".wav", format = "wav", bitrate = "192k")
+    current_segment.export(directory_name + "/" + file_name + ' ' + str(i) + ".wav", format = "wav", bitrate = "192k")
     i += 1
     
     while len(current_segment) == seg_length:
         current_segment = song[seg_length * i : seg_length * (i + 1)]
-        current_segment.export(directory_name + "/" + no_prefix + ' ' + str(i) + ".wav", format = "wav", bitrate = "192k")
+        current_segment.export(directory_name + "/" + file_name + ' ' + str(i) + ".wav", format = "wav", bitrate = "192k")
         i += 1
 
     current_segment = np.zeros(seg_length, dtype=np.float64)
     current_segment[:len(song) - (seg_length * i)] = song[len(song) - (seg_length * i):]
-    current_segment.export(directory_name + "/" + no_prefix + ' ' + str(i) + ".wav", format = "wav", bitrate = "192k")
+    current_segment.export(directory_name + "/" + file_name + ' ' + str(i) + ".wav", format = "wav", bitrate = "192k")
     print("Success! number of segments:", str(i))
 
 def create_analyzers(fs=44100.0,

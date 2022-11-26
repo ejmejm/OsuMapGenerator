@@ -17,7 +17,10 @@ def get_one_hot(value, cate_num):
 
   return one_hot
 
-def format_hitobjects(src):
+def format_hitobjects(src, input_size, preprocess_text):
+
+  PAD_TOKEN = preprocess_text('<pad>')[0]
+
   src_processed = []
   for s in src:
     line = []
@@ -40,6 +43,10 @@ def format_hitobjects(src):
       t = int(int(s_arr[2])/10)/1000
       type = int(s_arr[3])/256
       hs = int(s_arr[4])/20
+      # remains = preprocess_text(','.join(s_arr[5:]))
+      # m = [x, y, t, type, hs] + remains
+      # pad_len = input_size - len(m)
+      # np.pad(m, (0, pad_len), constant_values=PAD_TOKEN)
       line.append([x, y, t, type, hs])
       # line.append([int(s_arr[0])/640, int(s_arr[1])/480, int(s_arr[2])/10000])
     src_processed.append(line)
@@ -64,7 +71,7 @@ def reconstruct_hitobjects(src):
 
   return src_processed
 
-def prepare_tensor_vqvae(src, preprocess_text, config):
+def prepare_tensor_vqvae(src, input_size, preprocess_text, config):
   """Converts to tensor, pads, and send to device.
   
   Args:
@@ -79,22 +86,18 @@ def prepare_tensor_vqvae(src, preprocess_text, config):
     return [float(s_arr[0])/2048, float(s_arr[1])/2048, float(s_arr[2])/100000, float(s_arr[3])/1024, float(s_arr[4])/1024]
     # return [float(s_arr[0]), float(s_arr[1]), float(s_arr[2]), float(s_arr[3]), float(s_arr[4])]
 
-  src = format_hitobjects(src)
+  src = format_hitobjects(src, input_size, preprocess_text)
   # src = [[process(obj) for obj in s] for s in src]
 
   max_src_len = config['input_size']
-
-  PAD_TOKEN = -1
 
   src_tensors = []
   for s in src:
     one_tensor = []
     for obj in s:
       oneline = torch.tensor(obj[:max_src_len], dtype=torch.float)
-      # pad_len = max_src_len - len(oneline)
-      # oneline = F.pad(oneline, (0, pad_len), value=PAD_TOKEN)
       one_tensor.append(oneline)
-    
+      
     src_tensors.append(torch.stack(one_tensor))
   src_tensor = torch.stack(src_tensors)
 

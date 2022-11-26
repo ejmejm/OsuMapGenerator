@@ -32,7 +32,7 @@ def eval(encoder, decoder, quantizer, data_loader, preprocess_text, config):
     hitobjects = [obj[1] for obj in batch]
     batch_samples = [sample_hitobjects(obj) for obj in hitobjects]
     # src = training_samples
-    src_tensor = prepare_tensor_vqvae(batch_samples, preprocess_text, config)
+    src_tensor = prepare_tensor_vqvae(batch_samples, config['input_size'], preprocess_text, config)
     src_tensor = src_tensor.detach().to(config['device']).float()
     target = src_tensor
     with torch.no_grad():
@@ -73,7 +73,7 @@ def train(encoder, decoder, quantizer, train_loader, preprocess_text, config, va
       # training_samples  = [format_training_data(None, None, obj, None)[1] for obj in batch_samples]
 
       # src = training_samples
-      src_tensor = prepare_tensor_vqvae(batch_samples, preprocess_text, config)
+      src_tensor = prepare_tensor_vqvae(batch_samples, config['input_size'], preprocess_text, config)
 
       encoder.train()
       decoder.train()
@@ -129,7 +129,7 @@ def tokenize(encoder, quantizer, dataloader, preprocess_text, config):
     # training_samples  = [format_training_data(None, None, obj, None)[1] for obj in batch_samples]
 
     # src = training_samples
-    src_tensor = prepare_tensor_vqvae(batch_samples, preprocess_text, config)
+    src_tensor = prepare_tensor_vqvae(batch_samples, config['input_size'], preprocess_text, config)
 
     encoder.eval()
     decoder.eval()

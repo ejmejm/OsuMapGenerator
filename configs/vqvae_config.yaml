@@ -30,7 +30,7 @@ max_src_len: 512
 max_tgt_len: 1024
 max_gen_len: 1024 # Max length for post-training generation
 
-load_model: True
+load_model: False
 
 # Training
 lr: 0.0001
@@ -58,3 +58,8 @@ input_size: 5
 lr_scheduler_e: 4000
 
 token_length: 50
+
+# Audio
+segment_length: 23 # Audio segmentation size
+prev_audio_segments_per_hitobject: 15 # How many previous audio segments to consider for the acoompanying audio signal of each hit object
+next_audio_segments_per_hitobject: 0 # Same but for next

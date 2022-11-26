@@ -8,8 +8,9 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 from utils import load_config
-from preprocessing.data_loading import load_beatmap_data, format_time_points, get_time_points_in_range
+from preprocessing.data_loading import load_beatmap_data, format_time_points, get_time_points_in_range, process_song
 import random
+from essentia.standard import MonoLoader
 
 DEFAULT_METADATA = set([
   'DistanceSpacing', # 'AudioLeadIn', 'Countdown', 'CountdownOffset', 
@@ -44,12 +45,13 @@ class OsuVQVaeDataset(Dataset):
     return map_id, hit_objects
 
 class OsuTokensDataset(Dataset):
-  def __init__(self, root_dir, include_audio=True, map_ids=None):
+  def __init__(self, config, root_dir, include_audio=True, map_ids=None):
     self.root_dir = root_dir
     self.include_audio = include_audio
     self.map_dir = os.path.join(root_dir, 'maps')
     self.audio_dir = os.path.join(root_dir, 'songs')
     self.token_dir = os.path.join(root_dir, 'gen/tokens')
+    self.audio_gen_dir = os.path.join(root_dir, 'gen/audio_feature')
     # Mapping of map_id to song_id
     self.mapping = pd.read_csv(
       os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
@@ -60,6 +62,7 @@ class OsuTokensDataset(Dataset):
         new_mapping[map_id] = self.mapping[map_id]
       self.mapping = new_mapping
     self.map_list = list(self.mapping.keys())
+    self.config = config
 
   def __len__(self):
     # This returns the number of maps, not the actual number of samples
@@ -75,15 +78,17 @@ class OsuTokensDataset(Dataset):
     metadata, time_points, hit_objects = load_beatmap_data(
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
-      # TODO: Add audio loading here
-      audio_data = []
+      audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
+      # TODO: Delete beatmaps with bad audio in preprocessing
+      # Curretly takes ~200-1000ms to load a song
+      audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
     else:
       audio_data = []
 
     tokens_list = load_token_data(os.path.join(self.token_dir, "%s.txt"%(map_id)))
     tokens = random.choice(tokens_list)
     tokens = [int(token) for token in tokens]
-    return metadata, time_points, tokens, audio_data
+    return metadata, time_points, tokens, hit_objects, audio_data
 
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
@@ -119,7 +124,10 @@ class OsuDataset(Dataset):
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
       # TODO: Add audio loading here
-      audio_data = []
+      processed_audio = process_song(os.path.join(self.audio_dir, self.mapping[idx]))
+      audio_data = np.frombuffer(buffer=processed_audio, dtype=np.float32, count=-1)
+      audio_data = audio_data[0:processed_audio.shape[0]*processed_audio.shape[1]]
+      audio_data = np.reshape(audio_data, processed_audio.shape)
     else:
       audio_data = []
 
@@ -129,7 +137,7 @@ class OsuDataset(Dataset):
 def get_dataloaders(config, root_dir, batch_size=1, include_audio=True,
                     val_split=0.05, test_split=0.1, shuffle=True):
   if (config.get('use_vqvae')):
-    dataset = OsuTokensDataset(root_dir, include_audio=include_audio)
+    dataset = OsuTokensDataset(config, root_dir, include_audio=include_audio)
   else:
     dataset = OsuDataset(root_dir, include_audio=include_audio)
   # Split dataset into train, val, and test
@@ -176,7 +184,7 @@ def sample_tokensets_from_map(config,
   selected_time_points = time_points
 
   # TODO: Add a way to sample a portion of audio data
-  selected_audio = []
+  selected_audio = audio_data
 
   return selected_metadata, selected_time_points, \
          selected_tokens, selected_audio
@@ -289,7 +297,7 @@ def modify_timediff(hit_objects):
   return modified_hit_objects
 
 def sample_hitobjects(hit_objects,
-    n_hit_objects=8):
+    n_hit_objects=16):
   modified_hit_objects = modify_timediff(hit_objects)
   
   start_idx = np.random.randint(0, max(1, len(modified_hit_objects) - n_hit_objects))
