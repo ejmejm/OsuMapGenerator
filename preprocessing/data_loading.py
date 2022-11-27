@@ -151,14 +151,20 @@ class OsuDataset(Dataset):
       audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
       # TODO: Delete beatmaps with bad audio in preprocessing
       # Curretly takes ~200-1000ms to load a song
+      print(map_id)
       audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
     else:
       audio_data = None
 
     if self.preprocess:
-      out = map_to_train_data(
-        (metadata, time_points, hit_objects, audio_data),
-        self.preprocess_text, self.config, device='cpu')
+      try:
+        out = map_to_train_data(
+          (metadata, time_points, hit_objects, audio_data),
+          self.preprocess_text, self.config, device='cpu')
+      except Exception as e:
+        print('Error processing map {}: {}'.format(map_id, e))
+        print('Returning None')
+        out = None
       return out
 
     return metadata, time_points, hit_objects, audio_data
@@ -180,9 +186,6 @@ def get_dataloaders(config, preprocess=False, shuffle=True):
 
   train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
     dataset, [train_size, val_size, test_size])
-
-  if config['n_load_workers'] > 0:
-    torch.multiprocessing.set_start_method('spawn')
 
   train_loader = DataLoader(
     train_dataset, batch_size=config['batch_size'], shuffle=shuffle, collate_fn=collate_fn,
@@ -411,16 +414,18 @@ def convert_to_relative_time(hit_objects, time_points):
 
   return new_hit_objects, ho_beat_lengths
 
-def get_relative_time_beats(hit_object):
+def get_relative_time_beats(time_str):
   """
   Gets the number of beats in a relative time string.
   """
-  beats = float(hit_object[0])
-  if len(hit_object) <= 1 or hit_object[1] != ':':
+  parts = time_str.split(':')
+  beats = float(parts[0])
+  if len(parts) <= 1:
     return beats
 
-  for i in range(2, len(hit_object)):
-    beats += 1 / (2 ** (i - 1))
+  for i, is_beat in enumerate(parts[1]):
+    if is_beat == 1:
+      beats += 1 / (2 ** (i + 1))
   return beats
 
 def get_hit_object_time(hit_object, relative=False):
@@ -535,7 +540,7 @@ def format_training_data(
     if n_audio_tokens > 0 and ho != HIT_OBJECT_END_TOKEN:
       pred_str += '<AudioSegment>'
       pred_str += '<AudioPlaceholder>' * n_audio_tokens
-
+  
   return prior_str, pred_str, audio_segments
 
 def map_to_train_data(map, preprocess_text, config, device=None):
@@ -565,6 +570,7 @@ def map_to_train_data(map, preprocess_text, config, device=None):
          audio_segments, audio_idxs, target
 
 def map_to_train_collate(batch):
+  batch = [sample for sample in batch if sample is not None]
   cat_dims = [1, 1, None, None, 0, 1, 1] # Dimensions to concatenate
   out_data = []
   for tensors, dim in zip(zip(*batch), cat_dims):
