@@ -150,6 +150,9 @@ class OsuDataset(Dataset):
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
       audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
+      # Example map with audio issue: '9247.osu'
+      # Update on this, it look like single frames have issues, so probably okay
+      
       # TODO: Delete beatmaps with bad audio in preprocessing
       # Curretly takes ~200-1000ms to load a song
       audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
@@ -157,14 +160,14 @@ class OsuDataset(Dataset):
       audio_data = None
 
     if self.preprocess:
-      # try:
-      out = map_to_train_data(
-        (metadata, time_points, hit_objects, audio_data),
-        self.preprocess_text, self.config, self.itos, device='cpu')
-      # except Exception as e:
-      #   print('Error processing map {}: {}'.format(map_id, e))
-      #   print('Returning None')
-      #   out = None
+      try:
+        out = map_to_train_data(
+          (metadata, time_points, hit_objects, audio_data),
+          self.preprocess_text, self.config, self.itos, device='cpu')
+      except Exception as e:
+        print('Error processing map {}: {}'.format(map_id, e))
+        print('Returning None')
+        out = None
       return out
 
     return metadata, time_points, hit_objects, audio_data

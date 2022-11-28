@@ -111,6 +111,9 @@ if __name__ == '__main__':
   if config['use_wandb']:
     import wandb
     wandb.init(project=config['wandb_project'], config=config)
+
+  if config['n_load_workers'] > 0:
+    torch.multiprocessing.set_start_method('spawn', force=True)
   
   # Get data loaders
   preprocess_text, vocab = get_text_preprocessor(config)
