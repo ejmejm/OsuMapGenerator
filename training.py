@@ -46,6 +46,7 @@ def eval(model, data_loader, preprocess_text, config):
 def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
   last_eval = 0
   curr_idx = 0
+  pad_token = preprocess_text('<pad>')[0]
 
   loss_hist = []
   for epoch_idx in range(config['epochs']):
@@ -67,12 +68,16 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       # Calculate loss
       losses = F.cross_entropy(output, target, reduction='none')
 
+      # Mask out the pad tokens
+      loss_mask = target != pad_token
+
       # Mask out losses for audio tokens
       if config['include_audio']:
         audio_idxs = rearrange(audio_idxs, 's b -> b s')
         audio_mask = ~audio_idxs
-        losses = losses.masked_select(audio_mask)
+        loss_mask = loss_mask & audio_mask
 
+      losses = losses.masked_select(loss_mask)
       loss = losses.mean()
       
       loss_hist.append(loss.item())
