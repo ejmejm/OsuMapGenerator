@@ -10,6 +10,7 @@ from tqdm import tqdm
 from utils import load_config, parse_args
 from preprocessing.data_loading import get_dataloaders, sample_from_map
 from preprocessing.data_loading import format_training_data
+from preprocessing.data_loading import HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN
 from text_processing import get_tokenizer
 
 
@@ -21,8 +22,6 @@ def create_default_vocab(args, config):
 
   token_counts = Counter()
   for batch_idx, batch in tqdm(enumerate(train_loader), total=len(train_loader)):
-    # if batch_idx >= 20:
-    #   break
     batch_samples = [sample_from_map(*map, config) for map in batch]
     training_samples = [format_training_data(*map, config) \
       for map in batch_samples]
@@ -33,6 +32,7 @@ def create_default_vocab(args, config):
       # print(token_counts)
     if args.early_stop > 0 and batch_idx >= args.early_stop - 1:
       break
+  token_counts.update([HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN])
 
   vocab = tt.vocab.vocab(token_counts, specials=['<unk>', '<pad>'])
   vocab.set_default_index(vocab['<unk>'])
