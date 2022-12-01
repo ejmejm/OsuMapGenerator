@@ -97,8 +97,6 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
         print(f'Epoch {epoch_idx} | Sample #{curr_idx} | Eval loss: {np.mean(eval_losses):.3f}')
         log({'epoch': epoch_idx, 'eval_loss': np.mean(eval_losses)}, config)
 
-        if 'model_save_path' in config:
-          torch.save(model.state_dict(), config['model_save_path'])
 
   return losses
 

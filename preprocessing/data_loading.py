@@ -108,6 +108,9 @@ def load_beatmap_data(path):
       groups = result.groups() if result else tuple()
       if len(groups) >= 1:
         hit_objects.append(groups[0].strip())
+        
+  hit_objects = [HIT_OBJECT_START_TOKEN] \
+    + hit_objects + [HIT_OBJECT_END_TOKEN]
 
   return metadata, timing_points, hit_objects
 
@@ -216,26 +219,11 @@ def sample_from_map(
     if value is not None:
       selected_metadata[key] = value
 
-  start_idx = np.random.randint(0, max(1, len(hit_objects) - config['max_hit_objects']))
+  start_idx = np.random.randint(0, max(1, len(hit_objects) - config['max_hit_objects'] + 1))
   selected_hit_objects = hit_objects[start_idx:start_idx + config['max_hit_objects']]
-  if start_idx == 0:
-    selected_hit_objects.insert(0, HIT_OBJECT_START_TOKEN)
-    start_time = 0
-  else:
-    start_time = int(selected_hit_objects[0].split(',')[2])
-
-  if start_idx + config['max_hit_objects'] == len(hit_objects):
-    selected_hit_objects.append(HIT_OBJECT_END_TOKEN)
 
   selected_time_points = time_points
-
-  if audio_data is not None:
-    # TODO: Figure out what the end time for the audio should be
-    # selected_audio = audio_data[start_time:]
-    selected_audio = audio_data
-  else:
-    # selected_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in selected_hit_objects]
-    selected_audio = []
+  selected_audio = audio_data or []
 
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio
@@ -274,6 +262,14 @@ def format_time_points(time_points):
       last_entry_type = 'time_point'
 
   return new_time_points, slider_changes
+
+def tp_to_beat_len(time_point):
+  """Converts a time point to beat_len"""
+  return float(time_point.split(',')[1])
+
+def tp_to_time(time_point):
+  """Converts a time point to beat_len"""
+  return float(time_point.split(',')[0])
 
 def get_time_points_in_range(time_points, hit_objects, slider_changes=None):
   """
@@ -487,7 +483,7 @@ def format_training_data(
   orig_hit_objects = hit_objects
   f_time_points, slider_changes = get_time_points_in_range(
     f_time_points, hit_objects, slider_changes)
-  r_hit_objects, bpms = convert_to_relative_time(hit_objects, f_time_points)
+  r_hit_objects, beat_lens = convert_to_relative_time(hit_objects, f_time_points)
 
   if config['relative_timing']:
     hit_objects = r_hit_objects
@@ -516,17 +512,17 @@ def format_training_data(
     prev_ho_time = 0
     for i in range(len(f_hit_objects)):
       if f_hit_objects[i] == BREAK_TOKEN:
-        bpm = bpms[orig_ho_idx - 1]
-        ho_time = prev_ho_time + config['break_length'] * bpms[orig_ho_idx - 1]
+        beat_len = beat_lens[orig_ho_idx - 1]
+        ho_time = prev_ho_time + config['break_length'] * beat_lens[orig_ho_idx - 1]
       else:
-        bpm = bpms[orig_ho_idx]
+        beat_len = beat_lens[orig_ho_idx]
         ho_time = get_hit_object_time(orig_hit_objects[orig_ho_idx], relative=False)
         orig_ho_idx += 1
         if ho_time == -1:
           continue
 
       start_idx = int(ho_time * config['sample_rate'] / 1000)
-      end_idx = int((ho_time + bpm * config['break_length']) * config['sample_rate'] / 1000)
+      end_idx = int((ho_time + beat_len * config['break_length']) * config['sample_rate'] / 1000)
       segment = audio_data[start_idx:end_idx]
 
       if end_idx > len(audio_data):

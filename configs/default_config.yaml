@@ -38,7 +38,7 @@ batch_size: 8
 dropout: 0
 eval_freq: 30000 # In number of samples
 val_split: 0.01
-test_split: 0.05
+test_split: 0.03
 max_hit_objects: 100
 
 # Audio
