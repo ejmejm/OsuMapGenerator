@@ -171,6 +171,7 @@ class OsuDataset(Dataset):
         print('Error processing map {}: {}'.format(map_id, e))
         print('Returning None')
         out = None
+        raise e
       return out
 
     return metadata, time_points, hit_objects, audio_data
@@ -223,7 +224,7 @@ def sample_from_map(
   selected_hit_objects = hit_objects[start_idx:start_idx + config['max_hit_objects']]
 
   selected_time_points = time_points
-  selected_audio = audio_data or []
+  selected_audio = audio_data if audio_data is not None else []
 
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio
