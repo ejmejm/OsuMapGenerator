@@ -7,8 +7,9 @@ wandb_project: 'osu!-ai'
 # Constants
 beatmap_path: 'data/formatted_beatmaps/'
 vocab_dir: 'preprocessing/vocab/'
-model_save_path: 'models/test_model.pt'
 output_dir: 'output/'
+model_save_path: 'models/test_model.pt'
+save_model: False
 
 # Preprocessing
 tokenizer_type: default # sentencepiece

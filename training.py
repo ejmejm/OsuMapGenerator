@@ -5,7 +5,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 
 from models import model_from_config
-from preprocessing.data_loading import get_dataloaders
+from preprocessing.data_loading import get_dataloaders, AUDIO_PLACEHOLDER_TOKEN
 from preprocessing.text_processing import get_text_preprocessor
 from utils import load_config, log, parse_args
 
@@ -15,6 +15,9 @@ MAX_HIT_OBJECTS = 100
 
 
 def eval(model, data_loader, preprocess_text, config):
+  pad_token = preprocess_text('<pad>')[0]
+  audio_placeholder_token = preprocess_text(AUDIO_PLACEHOLDER_TOKEN)[0]
+
   loss_hist = []
   model.eval()
   for batch in tqdm(data_loader):
@@ -32,11 +35,15 @@ def eval(model, data_loader, preprocess_text, config):
     with torch.no_grad():
       losses = F.cross_entropy(output, target, reduction='none')
 
+    # Mask out the pad tokens
+    loss_mask = target != pad_token
+
     if config['include_audio']:
       audio_idxs = rearrange(audio_idxs, 's b -> b s')
-      audio_mask = ~audio_idxs
-      losses = losses.masked_select(audio_mask)
+      audio_mask = target != audio_placeholder_token
+      loss_mask = loss_mask & audio_mask
 
+    losses = losses.masked_select(loss_mask)
     loss = losses.mean()
     loss_hist.append(loss.item())
 
@@ -44,9 +51,11 @@ def eval(model, data_loader, preprocess_text, config):
   
 
 def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
+  pad_token = preprocess_text('<pad>')[0]
+  audio_placeholder_token = preprocess_text(AUDIO_PLACEHOLDER_TOKEN)[0]
+
   last_eval = 0
   curr_idx = 0
-  pad_token = preprocess_text('<pad>')[0]
 
   loss_hist = []
   for epoch_idx in range(config['epochs']):
@@ -74,7 +83,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       # Mask out losses for audio tokens
       if config['include_audio']:
         audio_idxs = rearrange(audio_idxs, 's b -> b s')
-        audio_mask = ~audio_idxs
+        audio_mask = target != audio_placeholder_token
         loss_mask = loss_mask & audio_mask
 
       losses = losses.masked_select(loss_mask)
@@ -97,6 +106,10 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
         print(f'Epoch {epoch_idx} | Sample #{curr_idx} | Eval loss: {np.mean(eval_losses):.3f}')
         log({'epoch': epoch_idx, 'eval_loss': np.mean(eval_losses)}, config)
 
+        if config.get('save_model', True):
+          print('Saving model...')
+          torch.save(model.state_dict(), config['model_save_path'])
+          print('Model saved!')
 
   return losses
 
@@ -131,9 +144,10 @@ if __name__ == '__main__':
     print('Training interrupted.')
 
   # Save the final model
-  if 'model_save_path' in config:
+  if config.get('save_model', True):
+    print('Saving model...')
     torch.save(model.state_dict(), config['model_save_path'])
-  print('Model saved!')
+    print('Model saved!')
 
   # Test the model
   if test_loader is not None:
