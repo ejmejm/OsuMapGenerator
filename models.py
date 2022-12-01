@@ -79,7 +79,6 @@ class DefaultTransformer(nn.Module):
         src = self.embedding(src) * math.sqrt(self.d_model)
         tgt = self.embedding(tgt) * math.sqrt(self.d_model)
 
-        # TODO: extract song as numpy array from src and use here + adjust the 16 as necessary
         if self.include_audio and audio is not None:
             audio_in_shape = audio.shape
             audio = rearrange(audio, 'b s c d -> (b s) c d')

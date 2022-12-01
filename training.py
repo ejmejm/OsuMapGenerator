@@ -5,6 +5,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 
 from models import model_from_config
+from gpt_model import gpt_from_config
 from preprocessing.data_loading import get_dataloaders, AUDIO_PLACEHOLDER_TOKEN
 from preprocessing.text_processing import get_text_preprocessor
 from utils import load_config, log, parse_args
@@ -96,6 +97,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       # Backprop
       optimizer.zero_grad()
       loss.backward()
+      torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
       optimizer.step()
 
       curr_idx += len(batch)
@@ -133,9 +135,16 @@ if __name__ == '__main__':
   # print(vocab.get_itos())
 
   # Create model and load when applicable
-  model = model_from_config(config, vocab)
-  print('# params:', sum(p.numel() for p in model.parameters()))
-  optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
+  if config.get('use_gpt', False):
+    print('Using GPT model')
+    model = gpt_from_config(config, vocab)
+    print('# params:', sum(p.numel() for p in model.parameters()))
+    optimizer = model.configure_optimizers(config)
+  else:
+    print('Using standard model')
+    model = model_from_config(config, vocab)
+    print('# params:', sum(p.numel() for p in model.parameters()))
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
 
   # Train the model
   try:

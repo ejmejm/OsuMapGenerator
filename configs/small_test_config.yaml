@@ -1,0 +1,48 @@
+device: 'cuda'
+
+# Logging
+use_wandb: False
+wandb_project: 'osu!-ai'
+
+# Constants
+beatmap_path: 'data/formatted_beatmaps/'
+vocab_dir: 'preprocessing/vocab/'
+model_save_path: 'models/small_test_model.pt'
+output_dir: 'output/'
+
+# Preprocessing
+tokenizer_type: default # sentencepiece
+spm_vocab_size: 1000 # Only used if using sentencepiece
+relative_timing: True
+break_length: 4 # How many beats without a hit object before breaks appear
+n_load_workers: 2
+include_audio: True
+
+# Model
+d_model: 64
+d_hid: 128
+n_head: 4
+n_encoder_layers: 2
+n_decoder_layers: 2
+
+max_src_len: 256
+max_tgt_len: 256
+max_gen_len: 256 # Max length for post-training generation
+
+load_model: True
+
+# Training
+lr: 0.001
+epochs: 10
+batch_size: 2
+dropout: 0
+eval_freq: 1000 # In number of samples
+val_split: 0.001
+test_split: 0.03
+max_hit_objects: 20
+
+# Audio
+segments_per_beat: 16 # Determines input to convolution
+audio_tokens_per_segment: 1 # Determines convolution size
+n_mel_bands: 80
+sample_rate: 44100
