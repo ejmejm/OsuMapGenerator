@@ -4,6 +4,7 @@ import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 import math
+from einops import rearrange
 
 def model_from_config(config, vocab):
     # Create the model and load when applicable
@@ -13,13 +14,34 @@ def model_from_config(config, vocab):
                                         n_dec_layers=config['n_decoder_layers'], n_head=config['n_head'], d_k=config['d_k'], d_v=config['d_v'],
                                         dropout=config['dropout'],
                                         n_src_position=50, n_trg_position=100,
-                                        trg_emb_prj_weight_sharing=False
+                                        trg_emb_prj_weight_sharing=False, 
+                                         segments_per_beat = config['segments_per_beat'],
+                                        audio_tokens_per_segment = config['audio_tokens_per_segment'],
+                                        n_mel_bands = config['n_mel_bands'],
+                                        include_audio = config['include_audio']
                                         )
 
     if config['load_model'] and os.path.exists(config['model_save_path']):
         model.load_state_dict(torch.load(config['model_save_path']))
 
     return model
+
+def get_non_pad_mask(padded_input, input_lengths=None, pad_idx=None):
+    """padding position is set to 0, either use input_lengths or pad_idx
+    """
+    assert input_lengths is not None or pad_idx is not None
+    if input_lengths is not None:
+        # padded_input: N x T x ..
+        N = padded_input.size(0)
+        non_pad_mask = padded_input.new_ones(padded_input.size()[:-1])  # N x T
+        for i in range(N):
+            non_pad_mask[i, input_lengths[i]:] = 0
+    if pad_idx is not None:
+        # padded_input: N x T
+        assert padded_input.dim() == 2
+        non_pad_mask = padded_input.ne(pad_idx).float()
+    # unsqueeze(-1) for broadcast
+    return non_pad_mask.unsqueeze(-1)
 
 def get_pad_mask(batch_size, seq_len, non_pad_lens):
     non_pad_lens = non_pad_lens.data.tolist()
@@ -179,12 +201,12 @@ class Encoder(nn.Module):
 
     def forward(self, src_seq, src_mask, return_attns=False, input_onehot=False):
         enc_slf_attn_list = []
-        if input_onehot:
-            src_seq = torch.matmul(src_seq, self.src_word_emb.weight)
-            src_seq = src_seq * src_mask.transpose(1, 2)
-        else:
-            src_seq = self.src_word_emb(src_seq)
-        src_seq *= self.d_model ** 0.5
+        # if input_onehot:
+        #     src_seq = torch.matmul(src_seq, self.src_word_emb.weight)
+        #     src_seq = src_seq * src_mask.transpose(1, 2)
+        # else:
+        #     src_seq = self.src_word_emb(src_seq)
+        # src_seq *= self.d_model ** 0.5
         enc_output = self.position_enc(src_seq)
         for enc_layer in self.layer_stack:
             enc_output, enc_slf_attn = enc_layer(enc_output, slf_attn_mask=src_mask)
@@ -225,13 +247,28 @@ class Decoder(nn.Module):
 class VQVaeTransformer(nn.Module):
     def __init__(self, n_src_vocab, src_pad_idx, n_trg_vocab, trg_pad_idx, d_src_word_vec=512, d_trg_word_vec=512,
                  d_model=512, d_inner=2048, n_enc_layers=6, n_dec_layers=6, n_head=8, d_k=64, d_v=64,
-                 dropout=0.1, n_src_position=40, n_trg_position=200, trg_emb_prj_weight_sharing=True):
+                 dropout=0.1, n_src_position=40, n_trg_position=200, trg_emb_prj_weight_sharing=True, segments_per_beat: int = 8, audio_tokens_per_segment: int = 2,
+                 n_mel_bands: int = 80, include_audio=False):
         super(VQVaeTransformer, self).__init__()
-
+        self.include_audio = include_audio
         self.trg_pad_idx = trg_pad_idx
         self.src_pad_idx = src_pad_idx
 
         self.d_model = d_model
+
+        if self.include_audio:
+            self.audio_layers = nn.Sequential(
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=7, stride=3),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=2),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=4),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, self.d_model, kernel_size=3),
+                nn.ReLU(),
+                nn.Dropout1d(dropout),
+                nn.AdaptiveAvgPool1d(audio_tokens_per_segment)
+            )
 
         self.encoder = Encoder(
             n_src_vocab=n_src_vocab, n_position=n_src_position, d_word_vec=d_src_word_vec,
@@ -252,7 +289,7 @@ class VQVaeTransformer(nn.Module):
         if trg_emb_prj_weight_sharing:
             self.trg_word_prj.weight = self.decoder.trg_word_emb.weight
 
-    def forward(self, src_seq, trg_seq, input_onehot=False, src_mask=None, src_non_pad_lens=0):
+    def forward(self, src_seq, trg_seq, audio = None, input_onehot=False, src_mask=None, src_non_pad_lens=0):
         batch_size, src_seq_len = src_seq.shape[0], src_seq.shape[1]
         # src_mask = get_pad_mask(batch_size, src_seq_len, src_non_pad_lens).to(src_seq.device)
         if not input_onehot:
@@ -264,7 +301,15 @@ class VQVaeTransformer(nn.Module):
         # print(src_mask)
         # print(trg_mask)
 
-        enc_output, *_ = self.encoder(src_seq, src_mask, input_onehot, input_onehot=input_onehot)
+        if self.include_audio and audio is not None:
+            audio_in_shape = audio.shape
+            # audio = rearrange(audio, 'b s c d -> (b s) c d')
+            audio_embeds = self.audio_layers(audio)
+            # audio_embeds = rearrange(audio_embeds,
+                # '(b s) c d -> b (s d) c', b=audio_in_shape[0], s=audio_in_shape[1])
+        audio_mask = get_non_pad_mask(audio_embeds, [ audio_embeds.shape[1] for i in range(audio_embeds.shape[0])])
+        # enc_output, *_ = self.encoder(src_seq, src_mask, input_onehot, input_onehot=input_onehot)
+        enc_output, *_ = self.encoder(audio_embeds, audio_mask, input_onehot)
         dec_output, *_ = self.decoder(trg_seq, trg_mask, enc_output, src_mask)
         seq_logit = self.trg_word_prj(dec_output)
         return seq_logit

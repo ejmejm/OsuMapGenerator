@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 from utils import load_config
-from preprocessing.data_loading import load_beatmap_data, format_time_points, get_time_points_in_range, process_song
+from preprocessing.data_loading import load_beatmap_data, format_time_points, get_time_points_in_range, process_song, audio_to_np, convert_to_relative_time
 import random
 from essentia.standard import MonoLoader
 
@@ -90,6 +90,77 @@ class OsuTokensDataset(Dataset):
     tokens = [int(token) for token in tokens]
     return metadata, time_points, tokens, hit_objects, audio_data
 
+class OsuTokensDatasetV2(Dataset):
+  def __init__(self, config, root_dir, include_audio=True, map_ids=None):
+    self.root_dir = root_dir
+    self.include_audio = include_audio
+    self.map_dir = os.path.join(root_dir, 'maps')
+    self.audio_dir = os.path.join(root_dir, 'songs')
+    self.token_dir = os.path.join(root_dir, 'gen/tokens')
+    self.audio_gen_dir = os.path.join(root_dir, 'gen/audio_feature')
+    self.sample_rate = config['sample_rate']
+    # Mapping of map_id to song_id
+    self.mapping = pd.read_csv(
+      os.path.join(root_dir, 'song_mapping.csv'), index_col=0)
+    self.mapping = self.mapping.to_dict()['song']
+    if map_ids is not None:
+      new_mapping = {}
+      for map_id in map_ids:
+        new_mapping[map_id] = self.mapping[map_id]
+      self.mapping = new_mapping
+    self.map_list = list(self.mapping.keys())
+    self.config = config
+
+  def __len__(self):
+    # This returns the number of maps, not the actual number of samples
+    return len(self.map_list)
+
+  def get_map_path(self, idx):
+    map_id = self.map_list[idx]
+    return os.path.join(self.map_dir, map_id)
+
+  def __getitem__(self, idx):
+    # Need to return selected metadata text, hitobject text, and audio data separately
+    map_id = self.map_list[idx]
+    metadata, time_points, hit_objects = load_beatmap_data(
+      os.path.join(self.map_dir, map_id))
+    if self.include_audio:
+      audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
+      # TODO: Delete beatmaps with bad audio in preprocessing
+      # Curretly takes ~200-1000ms to load a song
+      audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
+    else:
+      audio_data = []
+    
+    f_time_points, slider_changes = format_time_points(time_points)
+
+    # if config['relative_timing']:
+    #   hit_objects = hit_objects[1:]
+    audio_secs = 10
+    f_time_points, slider_changes = get_time_points_in_range(
+      f_time_points, hit_objects, slider_changes)
+
+    start_time, end_time = get_time_range(hit_objects)
+
+    select_t = random.randint(int(start_time / 1000 / audio_secs), int(end_time / 1000 / audio_secs - 1))
+
+    select_start_t, select_end_t = select_t * 1000 * audio_secs, (select_t + 1) * 1000 * audio_secs
+
+    selected_hit_objects = get_time_range_hit_objects(hit_objects, select_start_t, select_end_t)
+
+    r_hit_objects, bpms = convert_to_relative_time(selected_hit_objects, time_points)
+
+    start_idx = int(select_start_t * self.config['sample_rate'] / 1000)
+    end_idx = int(select_end_t * self.config['sample_rate'] / 1000)
+    segment = audio_data[start_idx:end_idx]
+
+    mel_bands = audio_to_np(
+      segment, self.config['segments_per_beat'] * self.config['break_length'],
+      n_mel_bands= self.config['n_mel_bands'], sample_rate=self.config['sample_rate'])
+
+  
+    return metadata, time_points, selected_hit_objects, mel_bands
+
 # TODO: Add breaks to dataset
 class OsuDataset(Dataset):
   def __init__(self, root_dir, include_audio=True, map_ids=None):
@@ -123,11 +194,10 @@ class OsuDataset(Dataset):
     metadata, time_points, hit_objects = load_beatmap_data(
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
-      # TODO: Add audio loading here
-      processed_audio = process_song(os.path.join(self.audio_dir, self.mapping[idx]))
-      audio_data = np.frombuffer(buffer=processed_audio, dtype=np.float32, count=-1)
-      audio_data = audio_data[0:processed_audio.shape[0]*processed_audio.shape[1]]
-      audio_data = np.reshape(audio_data, processed_audio.shape)
+      audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
+      # TODO: Delete beatmaps with bad audio in preprocessing
+      # Curretly takes ~200-1000ms to load a song
+      audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
     else:
       audio_data = []
 
@@ -137,7 +207,7 @@ class OsuDataset(Dataset):
 def get_dataloaders(config, root_dir, batch_size=1, include_audio=True,
                     val_split=0.05, test_split=0.1, shuffle=True):
   if (config.get('use_vqvae')):
-    dataset = OsuTokensDataset(config, root_dir, include_audio=include_audio)
+    dataset = OsuTokensDatasetV2(config, root_dir, include_audio=include_audio)
   else:
     dataset = OsuDataset(root_dir, include_audio=include_audio)
   # Split dataset into train, val, and test
@@ -188,6 +258,65 @@ def sample_tokensets_from_map(config,
 
   return selected_metadata, selected_time_points, \
          selected_tokens, selected_audio
+
+def get_time_range(hitobjects):
+  return int(hitobjects[0].split(',')[2]), int(hitobjects[-1].split(',')[2])
+
+def get_time_range_hit_objects(hitobjects, start_t, end_t):
+  new_hit_objects = []
+  for hi in hitobjects:
+    ht = int(hi.split(',')[2])
+    if ht > start_t and ht < end_t:
+      new_hit_objects.append(hi)
+  return new_hit_objects
+
+def sample_audio_and_tokens_from_map(config, 
+    metadata, time_points, hitobjects, audio_data, audio_secs=5, target_metadata=DEFAULT_METADATA):
+  n_tokens = config['token_length']
+  selected_metadata = {}
+  for key in target_metadata:
+    value = metadata.get(key)
+    if value is not None:
+      selected_metadata[key] = value
+
+  # f_time_points, slider_changes = format_time_points(time_points)
+
+  # # if config['relative_timing']:
+  # #   hit_objects = hit_objects[1:]
+
+  # orig_hit_objects = hitobjects
+  # f_time_points, slider_changes = get_time_points_in_range(
+  #   f_time_points, hitobjects, slider_changes)
+
+  # start_time, end_time = get_time_range(hitobjects)
+
+  # select_t = random.randint(int(start_time / 1000 / audio_secs), int(end_time / 1000 / audio_secs - 1))
+
+  # select_start_t, select_end_t = select_t * 1000 * audio_secs, (select_t + 1) * 1000 * audio_secs
+
+  # selected_hit_objects = get_time_range_hit_objects(hitobjects, select_start_t, select_end_t)
+
+  # r_hit_objects, bpms = convert_to_relative_time(selected_hit_objects, time_points)
+
+  # start_idx = int(select_start_t * config['sample_rate'] / 1000)
+  # end_idx = int(select_end_t * config['sample_rate'] / 1000)
+  # segment = audio_data[start_idx:end_idx]
+
+  # mel_bands = audio_to_np(
+  #   segment, config['segments_per_beat'] * config['break_length'],
+  #   n_mel_bands=config['n_mel_bands'], sample_rate=config['sample_rate'])
+
+
+  # if (len(tokens) > n_tokens):
+  #   start_idx = np.random.randint(0, max(1, len(tokens) - n_tokens))
+  #   selected_tokens = [config['codebook_size']] + tokens[start_idx:start_idx + n_tokens] + [config['codebook_size'] + 1]
+  # else:
+  #   selected_tokens = [config['codebook_size']] + tokens + [config['codebook_size'] + 1] + [config['codebook_size'] + 2] * (n_tokens - len(tokens))
+  selected_time_points = time_points
+
+
+  return selected_metadata, selected_time_points, \
+         hitobjects, audio_data
 
 def format_metadata(metadata, time_points, tokens, audio_data):
   prior_str = '<Metadata>'

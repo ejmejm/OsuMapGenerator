@@ -1,4 +1,4 @@
-device: 'cuda:0'
+device: 'cpu'
 
 # Logging
 use_wandb: True
@@ -15,7 +15,7 @@ output_dir: 'output/'
 tokenizer_type: default # sentencepiece
 spm_vocab_size: 1000 # Only used if using sentencepiece
 relative_timing: False
-break_length: 9999999 # How many beats without a hit object before breaks appear
+break_length: 4 # How many beats without a hit object before breaks appear
 include_audio: True
 n_load_workers: 4
 
@@ -35,7 +35,7 @@ load_model: False
 # Training
 lr: 0.0001
 epochs: 100
-batch_size: 32
+batch_size: 8
 dropout: 0
 eval_freq: 30000 # In number of samples
 
@@ -63,3 +63,10 @@ token_length: 50
 segment_length: 23 # Audio segmentation size
 prev_audio_segments_per_hitobject: 15 # How many previous audio segments to consider for the acoompanying audio signal of each hit object
 next_audio_segments_per_hitobject: 0 # Same but for next
+
+
+# Audio
+segments_per_beat: 16 # Determines input to convolution
+audio_tokens_per_segment: 2 # Determines convolution size
+n_mel_bands: 80
+sample_rate: 44100 # Currently not actually being used

@@ -12,10 +12,11 @@ from tqdm import tqdm
 from vqvae.transformer import model_from_config
 from vqvae.dataset import get_dataloaders
 from preprocessing.data_loading import format_training_data, sample_from_map
-from vqvae.dataset import sample_tokensets_from_map, format_metadata
+from vqvae.dataset import sample_tokensets_from_map, format_metadata, sample_audio_and_tokens_from_map
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
 from utils import load_config, log, parse_args
-from vqvae.tools import prepare_tensor_transformer
+from vqvae.tools import prepare_tensor_transformer, prepare_tensor_vqvae, prepare_tensor_tokens
+from vqvae.vqvae_model import VQEncoder, VQDecoder, Quantizer, build_model
 
 # Create arguments
 parser = argparse.ArgumentParser()
@@ -24,7 +25,7 @@ parser = argparse.ArgumentParser()
 
 BEATMAP_PATH = 'data/formatted_beatmaps/'
 MAX_HIT_OBJECTS = 100
-
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 def eval(model, data_loader, preprocess_text, config):
   losses = []
@@ -61,7 +62,7 @@ def eval(model, data_loader, preprocess_text, config):
       target = tgt_tensor[:, 1:]
       gt_tensor = tgt_tensor[:, :-1]
 
-      output = model(src_tensor, gt_tensor)
+      output = model(src_tensor, gt_tensor, audio = audio)
 
       output = output.view(-1, output.shape[-1]).clone()
       target = target.contiguous().view(-1).clone()
@@ -88,10 +89,12 @@ def cal_loss(pred, gold, trg_pad_idx):
   return loss
 
   
-def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
+def train(model, encoder, quantizer, train_loader, optimizer, preprocess_text, config, val_loader=None):
   last_eval = 0
   curr_idx = 0
   model.to(config['device'])
+  encoder.to(config['device'])
+  quantizer.to(config['device'])
   losses = []
   opt_lr = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
   for epoch_idx in range(config['epochs']):
@@ -117,18 +120,23 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
         target = rearrange(target, 's b -> b s')
       else:
         # why not processing these things in the dataset?
-        batch_samples = [sample_tokensets_from_map(config, *map) for map in batch]
+        batch_samples = [sample_audio_and_tokens_from_map(config, *map, audio_secs = 10) for map in batch]
         training_samples = [format_metadata(*map) for map in batch_samples]
 
-        meta, tokens, audio = zip(*training_samples)
+        meta, hit_objects, audio = zip(*training_samples)
+        audio = torch.from_numpy(np.stack(audio)).float()
+        audio = audio.to(config['device'])
+        audio = audio.transpose(1, 2)
+        token_tensor = prepare_tensor_tokens(hit_objects, encoder, quantizer, config['input_size'], preprocess_text, config)
+        
         # Convert text to numerical tensors with padding and corresponding masks
         src_tensor, tgt_tensor, src_mask, tgt_mask = \
-          prepare_tensor_transformer(meta, audio, tokens, preprocess_text, config)
+          prepare_tensor_transformer(meta, audio, token_tensor, preprocess_text, config)
         # Split the tgt tensor into the input and actual target
         target = tgt_tensor[:, 1:]
         gt_tensor = tgt_tensor[:, :-1]
 
-        output = model(src_tensor, gt_tensor)
+        output = model(src_tensor, gt_tensor, audio = audio)
       # Calculate loss
       o = output.view(-1, output.shape[-1]).clone()
       gt = target.contiguous().view(-1).clone()
@@ -173,6 +181,10 @@ if __name__ == '__main__':
     config['beatmap_path'], batch_size=config.get('batch_size'))
   preprocess_text, vocab = get_text_preprocessor(config)
 
+  enc_channels = [config.get('dim_vq_latent')]
+  dec_channels = [config.get('dim_vq_latent'), config.get('input_size')]
+  encoder, decoder, quantizer = build_model(config.get('input_size'), enc_channels, dec_channels, config)
+  
   # Create model and load when applicable
   model = model_from_config(config, vocab)
   print('# params:', sum(p.numel() for p in model.parameters()))
@@ -180,7 +192,7 @@ if __name__ == '__main__':
 
   # Train the model
   try:
-    losses = train(model, train_loader, optimizer, preprocess_text, config, val_loader=val_loader)
+    losses = train(model, encoder, quantizer, train_loader, optimizer, preprocess_text, config, val_loader=val_loader)
   except KeyboardInterrupt:
     print('Training interrupted.')
 
