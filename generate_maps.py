@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import re
+import time
 
 import numpy as np
 import pandas as pd
@@ -20,7 +21,7 @@ parser = argparse.ArgumentParser()
 
 
 AUDIO_FILE_NAME = 'audio.mp3'
-MAX_MAP_LENGTH = 10000
+MAX_MAP_LENGTH = 800
 
 
 def get_metadata_value(map_data, key):
@@ -35,6 +36,8 @@ def replace_metadata_value(map_data, key, value):
 if __name__ == '__main__':
     args = parse_args()
     config = load_config(args.config)
+
+    torch.manual_seed(time.time())
     
     map_path = os.path.join(config['beatmap_path'], 'song_mapping.csv')
     song_mapping = pd.read_csv(map_path, index_col=0)
@@ -241,12 +244,14 @@ if __name__ == '__main__':
       hit_objects = []
       for token in full_tgt:
         string = itos[token]
-        if string == HIT_OBJECT_START_TOKEN:
-          continue
-        elif string == '<HitObject>':
+        if string == '<HitObject>':
+          hit_objects.append('')
+        elif string == BREAK_TOKEN:
           hit_objects.append(string)
         elif string == '<pad>' or string == HIT_OBJECT_END_TOKEN:
           break
+        elif string.startswith('<'):
+          continue
         else:
           hit_objects[-1] += string
 
@@ -254,11 +259,45 @@ if __name__ == '__main__':
       if itos[full_tgt[-1]] != HIT_OBJECT_END_TOKEN:
         hit_objects = hit_objects[:-1]
 
+      # Convert relative timing to absolute timing
+      if config['relative_timing']:
+        tp_index = 0 # Keep track of the current time point
+        curr_time = 0 # In milliseconds
+
+        for i in range(len(hit_objects)):
+          # Get number of beats since last hit
+          if hit_objects[i] == BREAK_TOKEN:
+            beat_len = tp_to_beat_len(f_time_points[tp_index])
+            curr_time += config['break_length'] * beat_len
+          else:
+            ho_parts = hit_objects[i].split(',')
+            beat_str = ho_parts[2]
+            beats_since_last = get_relative_time_beats(beat_str)
+
+            # Check if we need to switch to the next timepoint
+            found_time = False
+            if tp_index + 1 < len(f_time_points):
+              next_beat_len = tp_to_beat_len(f_time_points[tp_index+1])
+              next_time = curr_time + beats_since_last * next_beat_len
+              next_tp_time = tp_to_time(f_time_points[tp_index+1])
+              if next_time >= next_tp_time:
+                curr_time = next_time
+                beat_len = next_beat_len
+                found_time = True
+                tp_index += 1
+                  
+            # Calcualte the time with the current timepoint
+            # if we haven't found a time yet
+            if not found_time:
+              beat_len = tp_to_beat_len(f_time_points[tp_index])
+              curr_time += beats_since_last * beat_len
+
+            hit_objects[i] = ','.join(ho_parts[:2] + [str(int(curr_time))] + ho_parts[3:])
+
       hit_object_str = '\n'.join(hit_objects)
 
       hit_object_str = hit_object_str.replace('<HitObject>', '')
-      hit_object_str = hit_object_str.replace(HIT_OBJECT_START_TOKEN, '')
-      hit_object_str = hit_object_str.replace(HIT_OBJECT_END_TOKEN, '')
+      hit_object_str = hit_object_str.replace(BREAK_TOKEN, '')
 
       map_path = dataset.get_map_path(beatmap_idx)
       with open(map_path, 'r', encoding='utf-8') as f:
