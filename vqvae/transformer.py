@@ -8,8 +8,8 @@ from einops import rearrange
 
 def model_from_config(config, vocab):
     # Create the model and load when applicable
-    model = VQVaeTransformer(len(vocab) + 1, len(vocab), config['codebook_size'] + 3, config['codebook_size'] + 2, d_src_word_vec=512,
-                                        d_trg_word_vec=512,
+    model = VQVaeTransformer(len(vocab) + 1, len(vocab), config['codebook_size'] + 3, config['codebook_size'] + 2, d_src_word_vec=256,
+                                        d_trg_word_vec=256,
                                         d_model=config['d_model'], d_inner=config['d_hid'], n_enc_layers=config['n_encoder_layers'],
                                         n_dec_layers=config['n_decoder_layers'], n_head=config['n_head'], d_k=config['d_k'], d_v=config['d_v'],
                                         dropout=config['dropout'],
@@ -188,28 +188,64 @@ class EncoderLayer(nn.Module):
 
 class Encoder(nn.Module):
     def __init__(self, n_src_vocab, d_word_vec, n_layers, n_head, d_k, d_v, d_model, d_inner,
-                 pad_idx, dropout=0.1, n_position=40):
+                 pad_idx, dropout=0.1, n_position=40, segments_per_beat: int = 8, audio_tokens_per_segment: int = 2,
+                 n_mel_bands: int = 80, include_audio=False):
         super(Encoder, self).__init__()
+        self.include_audio = include_audio
+        self.d_model = d_model
+        self.pad_idx = pad_idx
         self.position_enc = PositionalEncoding(d_model)
         self.src_word_emb = nn.Embedding(n_src_vocab, d_word_vec, padding_idx=pad_idx)
         self.layer_stack = nn.ModuleList([
             EncoderLayer(d_model, d_inner, n_head, d_k, d_v, dropout=dropout)
             for _ in range(n_layers)])
+
+        if self.include_audio:
+            self.audio_layers = nn.Sequential(
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=7, stride=3),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=2),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=4),
+                nn.ReLU(),
+                nn.Conv1d(n_mel_bands, int(self.d_model / 2), kernel_size=3),
+                nn.ReLU(),
+                nn.Dropout1d(dropout),
+                nn.AdaptiveAvgPool1d(audio_tokens_per_segment)
+            )
         # self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
         # self.scale_emb = scale_emb
         self.d_model = d_model
 
-    def forward(self, src_seq, src_mask, return_attns=False, input_onehot=False):
+    def forward(self, src_seq, src_mask, audio = None, return_attns=False, input_onehot=False):
         enc_slf_attn_list = []
-        # if input_onehot:
-        #     src_seq = torch.matmul(src_seq, self.src_word_emb.weight)
-        #     src_seq = src_seq * src_mask.transpose(1, 2)
-        # else:
-        #     src_seq = self.src_word_emb(src_seq)
-        # src_seq *= self.d_model ** 0.5
-        enc_output = self.position_enc(src_seq)
+
+        if self.include_audio and audio is not None:
+            audio_in_shape = audio.shape
+            # audio = rearrange(audio, 'b s c d -> (b s) c d')
+            # b s 1
+            audio_embeds = self.audio_layers(audio)
+            audio_embeds = audio_embeds.squeeze()
+            # audio_embeds = rearrange(audio_embeds,
+                # '(b s) c d -> b (s d) c', b=audio_in_shape[0], s=audio_in_shape[1])
+
+        input_cat = torch.cat((src_seq, audio_embeds), axis = 1)
+        input_mask = get_pad_mask_idx(input_cat, self.pad_idx)
+
+        if input_onehot:
+            src_seq = torch.matmul(src_seq, self.src_word_emb.weight)
+            src_seq = src_seq * src_mask.transpose(1, 2)
+        else:
+            src_seq = self.src_word_emb(src_seq)
+        src_seq *= self.d_model ** 0.5
+
+        input_cat = torch.cat((src_seq, audio_embeds), axis = 1)
+        input_emb = rearrange(input_cat, 'b s c -> b c s')
+
+
+        enc_output = self.position_enc(input_emb)
         for enc_layer in self.layer_stack:
-            enc_output, enc_slf_attn = enc_layer(enc_output, slf_attn_mask=src_mask)
+            enc_output, enc_slf_attn = enc_layer(enc_output, slf_attn_mask=input_mask)
             enc_slf_attn_list += [enc_slf_attn] if return_attns else []
         if return_attns:
             return enc_output, enc_slf_attn_list
@@ -256,24 +292,11 @@ class VQVaeTransformer(nn.Module):
 
         self.d_model = d_model
 
-        if self.include_audio:
-            self.audio_layers = nn.Sequential(
-                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=7, stride=3),
-                nn.ReLU(),
-                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=5, stride=2),
-                nn.ReLU(),
-                nn.Conv1d(n_mel_bands, n_mel_bands, kernel_size=4),
-                nn.ReLU(),
-                nn.Conv1d(n_mel_bands, self.d_model, kernel_size=3),
-                nn.ReLU(),
-                nn.Dropout1d(dropout),
-                nn.AdaptiveAvgPool1d(audio_tokens_per_segment)
-            )
 
         self.encoder = Encoder(
             n_src_vocab=n_src_vocab, n_position=n_src_position, d_word_vec=d_src_word_vec,
             d_model=d_model, d_inner=d_inner, n_layers=n_enc_layers, n_head=n_head, d_k=d_k,
-            d_v=d_v,  pad_idx=src_pad_idx, dropout=dropout
+            d_v=d_v,  pad_idx=src_pad_idx, dropout=dropout, segments_per_beat = segments_per_beat, audio_tokens_per_segment = audio_tokens_per_segment, n_mel_bands = n_mel_bands, include_audio = include_audio
         )
 
         self.decoder = Decoder(
@@ -300,16 +323,9 @@ class VQVaeTransformer(nn.Module):
 
         # print(src_mask)
         # print(trg_mask)
-
-        if self.include_audio and audio is not None:
-            audio_in_shape = audio.shape
-            # audio = rearrange(audio, 'b s c d -> (b s) c d')
-            audio_embeds = self.audio_layers(audio)
-            # audio_embeds = rearrange(audio_embeds,
-                # '(b s) c d -> b (s d) c', b=audio_in_shape[0], s=audio_in_shape[1])
-        audio_mask = get_non_pad_mask(audio_embeds, [ audio_embeds.shape[1] for i in range(audio_embeds.shape[0])])
+       
         # enc_output, *_ = self.encoder(src_seq, src_mask, input_onehot, input_onehot=input_onehot)
-        enc_output, *_ = self.encoder(audio_embeds, audio_mask, input_onehot)
+        enc_output, *_ = self.encoder(src_seq, src_mask, audio, input_onehot)
         dec_output, *_ = self.decoder(trg_seq, trg_mask, enc_output, src_mask)
         seq_logit = self.trg_word_prj(dec_output)
         return seq_logit
@@ -377,5 +393,5 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('positional_encoding', self.encoding)
 
     def forward(self, x):
-        batch_size, seq_len, _ = x.size()
+        batch_size, seq_len,_ = x.size()
         return self.encoding[:seq_len, :].clone().detach().to(x.device) + x

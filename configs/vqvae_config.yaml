@@ -1,4 +1,4 @@
-device: 'cpu'
+device: 'cuda:0'
 
 # Logging
 use_wandb: True
@@ -22,11 +22,11 @@ n_load_workers: 4
 # Model
 d_model: 512
 d_hid: 2048
-n_head: 2
-n_encoder_layers: 1
-n_decoder_layers: 1
+n_head: 4
+n_encoder_layers: 2
+n_decoder_layers: 2
 
-max_src_len: 512
+max_src_len: 256
 max_tgt_len: 1024
 max_gen_len: 1024 # Max length for post-training generation
 
@@ -67,6 +67,6 @@ next_audio_segments_per_hitobject: 0 # Same but for next
 
 # Audio
 segments_per_beat: 16 # Determines input to convolution
-audio_tokens_per_segment: 2 # Determines convolution size
+audio_tokens_per_segment: 1 # Determines convolution size
 n_mel_bands: 80
 sample_rate: 44100 # Currently not actually being used
