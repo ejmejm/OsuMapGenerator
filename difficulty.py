@@ -19,7 +19,10 @@ def anaylize_difficulty(map_path):
     
     difficulty_circle_size = float(meta["CircleSize"])
 
-    return run_all_rules(hit_objects, difficulty_circle_size), float(meta["OverallDifficulty"])
+    res = dict()
+    res["difficulty"] = run_all_rules(hit_objects, difficulty_circle_size), float(meta["OverallDifficulty"])
+
+    return res
 
 def run_all_rules(hit_objects, difficulty_circle_size):
     tp_hit_objects = []
