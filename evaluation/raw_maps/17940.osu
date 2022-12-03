@@ -1,0 +1,118 @@
+osu file format v12
+
+[General]
+AudioFilename: 3899.mp3
+AudioLeadIn: 0
+PreviewTime: 98809
+Countdown: 1
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+SkinPreference:Applejack V1.0
+WidescreenStoryboard: 1
+
+[Editor]
+Bookmarks: 30476,129523
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:Apples To The Core (Remix)
+TitleUnicode:Apples To The Core (Remix)
+Artist:Sim Gretina
+ArtistUnicode:Sim Gretina
+Creator:ztrot
+Version:Normal
+Source:My Little Pony : Friendship is Magic
+Tags:mlp applejack pinkiepie big mac applebloom grannysmith equestria pony
+BeatmapID:367963
+BeatmapSetID:143823
+
+[Difficulty]
+HPDrainRate:4
+CircleSize:3
+OverallDifficulty:5
+ApproachRate:5
+SliderMultiplier:1.4
+SliderTickRate:2
+
+[Events]
+//Background and Video events
+0,0,"Pinkie_and_the_Apple_family_together_S4E09.png",0,0
+//Break Periods
+2,90676,97847
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+0,476.190476190476,4,1,1,70,1,0
+45714,-100,4,1,1,70,0,1
+59999,-100,4,1,1,70,0,0
+76190,-100,4,1,1,70,0,1
+90476,-100,4,1,1,70,0,0
+129523,-100,4,1,1,70,0,1
+144523,-100,4,1,1,70,0,0
+144761,-100,4,1,1,70,0,1
+159999,-100,4,1,1,70,0,0
+
+
+[HitObjects]
+32,96,1458,1,0
+112,240,2886,1,0
+84,39,4315,1,0
+308,40,5744,1,0
+312,240,7648,1,0
+144,304,9077,1,0
+184,208,11934,1,0
+360,144,14791,1,0
+256,192,15982,1,0
+256,320,20982,1,0
+152,264,23839,1,0
+328,92,25744,1,0
+232,152,26696,1,0
+424,96,28601,1,0
+320,48,29553,1,0
+128,88,31458,1,0
+32,152,33363,1,0
+136,208,35267,1,0
+256,328,37172,1,0
+376,288,39077,1,0
+332,64,40982,1,0
+272,68,41458,1,0
+64,176,44077,1,0
+376,352,46696,1,0
+272,280,47648,1,0
+92,352,49553,1,0
+15,255,54315,1,0
+152,256,56220,1,0
+428,188,58124,1,0
+208,92,60029,1,0
+316,32,62886,1,0
+328,160,63839,1,0
+320,284,66696,1,0
+88,176,70505,1,0
+216,189,72410,1,0
+296,28,74315,1,0
+408,88,75267,1,0
+412,216,76220,1,0
+408,352,78124,1,0
+36,320,80029,1,0
+160,368,82886,1,0
+304,244,85743,1,0
+312,368,86696,1,0
+176,64,96220,1,0
+304,371,99553,1,0
+280,40,101458,1,0
+96,320,106696,1,044,0
+224,320,107648,1,0
+352,300,108601,1,0
+352,16,112410,1,0
+424,272,116220,1,0
+472,188,118124,1,0
