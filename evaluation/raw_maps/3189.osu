@@ -1,0 +1,92 @@
+osu file format v6
+
+[General]
+AudioFilename: 703.mp3
+AudioLeadIn: 0
+PreviewTime: 5969
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.4
+Mode: 0
+LetterboxInBreaks: 1
+SkinPreference:Default
+
+[Editor]
+DistanceSpacing: 0.800000011920929
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:The 13th Struggle
+Artist:Yoko Shimomura
+Creator:Beuchi-chan
+Version:Easy
+Source:Kingdom Hearts II
+Tags:Axel Roxas
+
+[Difficulty]
+HPDrainRate:2
+CircleSize:3
+OverallDifficulty:2
+SliderMultiplier:0.7
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"26_68629939.jpg"
+//Break Periods
+2,13832,15073
+2,24500,25407
+2,44502,47076
+2,69838,73412
+2,85840,89748
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,0,0,0
+
+[TimingPoints]
+298,333.370374486054,4,2,0,70,1,0
+96303,-100,4,2,0,0,0,0
+
+[Colours]
+Combo1 : 244,242,225
+Combo2 : 223,0,0
+Combo3 : 236,118,0
+SliderBorder : 128,128,128
+
+[HitObjects]
+72,312,322,1,0
+328,136,1323,1,0
+360,224,1656,1,0
+224,312,2656,1,0
+152,224,2989,1,0
+96,72,3656,1,0
+312,184,4656,1,0
+232,336,6156,1,0
+96,208,6823,1,0
+352,96,7990,6,0
+360,288,8657,1,0
+184,112,11324,1,0
+184,208,11657,1,0
+184,304,11990,1,0
+312,168,12657,1,0
+64,312,14491,1,0
+216,312,15157,1,0
+400,152,15991,1,0
+152,72,17324,1,0
+128,296,18658,1,0
+224,104,19325,1,0
+200,312,21992,1,0
+376,232,23992,1,0
+400,64,27825,1,0
+304,216,28492,1,0
+304,120,30992,1,0
+184,208,32826,1,0
+224,64,33493,1,0
+456,120,35493,1,0
+232,312,36326,1,0
+136,144,36993,1,0
