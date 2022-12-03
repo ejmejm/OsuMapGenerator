@@ -7,8 +7,9 @@ wandb_project: 'osu!-ai'
 # Constants
 beatmap_path: 'data/formatted_beatmaps/'
 vocab_dir: 'preprocessing/vocab/'
-model_save_path: 'models/test_model.pt'
 output_dir: 'output/'
+model_save_path: 'models/test_model.pt'
+save_model: False
 
 # Preprocessing
 tokenizer_type: default # sentencepiece
@@ -29,23 +30,20 @@ max_src_len: 512
 max_tgt_len: 1024
 max_gen_len: 1024 # Max length for post-training generation
 
-load_model: False
+load_model: True
 
 # Training
-lr: 0.0003
+lr: 0.001
 epochs: 10
 batch_size: 2
 dropout: 0
-eval_freq: 10000 # In number of samples
+eval_freq: 1000 # In number of samples
 val_split: 0.01
-test_split: 0.05
-max_hit_objects: 100
+test_split: 0.03
+max_hit_objects: 80
 
 # Audio
 segments_per_beat: 16 # Determines input to convolution
 audio_tokens_per_segment: 2 # Determines convolution size
 n_mel_bands: 80
-sample_rate: 44100 # Currently not actually being used
-# segment_length: 23 # Audio segmentation size
-# prev_audio_segments_per_hitobject: 15 # How many previous audio segments to consider for the acoompanying audio signal of each hit object
-# next_audio_segments_per_hitobject: 0 # Same but for next
+sample_rate: 44100

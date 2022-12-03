@@ -2,10 +2,8 @@ import math
 import os
 
 from einops import rearrange
-import numpy as np
 import torch
 from torch import nn, Tensor
-import torch.nn.functional as F
 
 
 def model_from_config(config, vocab):
@@ -78,7 +76,9 @@ class DefaultTransformer(nn.Module):
             output Tensor of shape [seq_len, batch_size, ntoken]
         """
 
-        # TODO: extract song as numpy array from src and use here + adjust the 16 as necessary
+        src = self.embedding(src) * math.sqrt(self.d_model)
+        tgt = self.embedding(tgt) * math.sqrt(self.d_model)
+
         if self.include_audio and audio is not None:
             audio_in_shape = audio.shape
             audio = rearrange(audio, 'b s c d -> (b s) c d')
@@ -86,20 +86,17 @@ class DefaultTransformer(nn.Module):
             audio_embeds = rearrange(audio_embeds,
                 '(b s) c d -> b (s d) c', b=audio_in_shape[0], s=audio_in_shape[1])
 
-        src = self.embedding(src) * math.sqrt(self.d_model)
-        tgt = self.embedding(tgt) * math.sqrt(self.d_model)
+            # Insert audio embeddings into the the target sequence
+            audio_idxs = [mask.nonzero() for mask in audio_mask.transpose(0, 1)]
+            n_audio_tokens = [len(idxs) for idxs in audio_idxs]
+            for batch_idx in range(len(n_audio_tokens)):
+                audio_token_idxs = torch.tensor(range(n_audio_tokens[batch_idx]))
+                audio_token_idxs = audio_token_idxs[:, None] \
+                    .repeat(1, self.d_model).to(audio_embeds.device)
+                segments = audio_embeds[batch_idx, :n_audio_tokens[batch_idx]]
 
-        # Insert audio embeddings into the the target sequence
-        audio_idxs = [mask.nonzero() for mask in audio_mask.transpose(0, 1)]
-        n_audio_tokens = [len(idxs) for idxs in audio_idxs]
-        for batch_idx in range(len(n_audio_tokens)):
-            audio_token_idxs = torch.tensor(range(n_audio_tokens[batch_idx]))
-            audio_token_idxs = audio_token_idxs[:, None] \
-                .repeat(1, self.d_model).to(audio_embeds.device)
-            segments = audio_embeds[batch_idx, :n_audio_tokens[batch_idx]]
-
-            scatter_idxs = audio_idxs[batch_idx].repeat(1, self.d_model)
-            tgt[:, batch_idx].scatter_(0, scatter_idxs, segments)
+                scatter_idxs = audio_idxs[batch_idx].repeat(1, self.d_model)
+                tgt[:, batch_idx].scatter_(0, scatter_idxs, segments)
         
         src *= math.sqrt(self.d_model)
         tgt *= math.sqrt(self.d_model)

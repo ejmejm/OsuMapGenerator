@@ -1,19 +1,17 @@
-from decimal import Decimal, getcontext
+from decimal import Decimal
 import os
 import re
 import warnings
 
-from preprocessing.audio_processing import prepare_audio_tensor, process_song, load_audio, audio_to_np
 from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
-from utils import load_config
-from pydub.exceptions import CouldntDecodeError
-
+from preprocessing.audio_processing import prepare_audio_tensor, audio_to_np
 from essentia.standard import MonoLoader
+
 import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, utils
+
 
 VERSION_PATTERN = r'osu file format v(\d+)(?://.*)?$'
 METADATA_ENTRY_PATTERN = r'^([a-zA-Z]+):(.+?)(?://.*)?$'
@@ -31,6 +29,7 @@ DEFAULT_METADATA = set([
   'BeatDivisor', 'GridSize', 'CircleSize', 'OverallDifficulty', 'ApproachRate',
   'SliderMultiplier', 'SliderTickRate', 'HPDrainRate', 'FormatVersion'
 ])
+
 
 
 def load_beatmap_data(path):
@@ -109,6 +108,9 @@ def load_beatmap_data(path):
       groups = result.groups() if result else tuple()
       if len(groups) >= 1:
         hit_objects.append(groups[0].strip())
+        
+  hit_objects = [HIT_OBJECT_START_TOKEN] \
+    + hit_objects + [HIT_OBJECT_END_TOKEN]
 
   return metadata, timing_points, hit_objects
 
@@ -119,7 +121,8 @@ class OsuDataset(Dataset):
     self.sample_rate = config['sample_rate']
     self.preprocess = preprocess
     self.include_audio = config['include_audio']
-    self.preprocess_text = get_text_preprocessor(config)[0]
+    self.preprocess_text, vocab = get_text_preprocessor(config)
+    self.itos = vocab.get_itos()
 
     self.map_dir = os.path.join(self.root_dir, 'maps')
     self.audio_dir = os.path.join(self.root_dir, 'songs')
@@ -150,18 +153,25 @@ class OsuDataset(Dataset):
       os.path.join(self.map_dir, map_id))
     if self.include_audio:
       audio_path = os.path.join(self.audio_dir, self.mapping[map_id])
+      # Example map with audio issue: '9247.osu'
+      # Update on this, it look like single frames have issues, so probably okay
+      
       # TODO: Delete beatmaps with bad audio in preprocessing
       # Curretly takes ~200-1000ms to load a song
       audio_data = MonoLoader(filename=audio_path, sampleRate=self.sample_rate)()
-      # print(audio_data)
-      # RuntimeError: Error while configuring MelBands: TriangularBands: the number of spectrum bins is insufficient for the specified number of triangular bands. Use zero padding to increase the number of FFT bins.
     else:
       audio_data = None
 
     if self.preprocess:
-      out = map_to_train_data(
-        (metadata, time_points, hit_objects, audio_data),
-        self.preprocess_text, self.config, device='cpu')
+      try:
+        out = map_to_train_data(
+          (metadata, time_points, hit_objects, audio_data),
+          self.preprocess_text, self.config, self.itos, device='cpu')
+      except Exception as e:
+        print('Error processing map {}: {}'.format(map_id, e))
+        print('Returning None')
+        out = None
+        raise e
       return out
 
     return metadata, time_points, hit_objects, audio_data
@@ -183,9 +193,6 @@ def get_dataloaders(config, preprocess=False, shuffle=True):
 
   train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
     dataset, [train_size, val_size, test_size])
-
-  if config['n_load_workers'] > 0:
-    torch.multiprocessing.set_start_method('spawn')
 
   train_loader = DataLoader(
     train_dataset, batch_size=config['batch_size'], shuffle=shuffle, collate_fn=collate_fn,
@@ -213,26 +220,11 @@ def sample_from_map(
     if value is not None:
       selected_metadata[key] = value
 
-  start_idx = np.random.randint(0, max(1, len(hit_objects) - config['max_hit_objects']))
+  start_idx = np.random.randint(0, max(1, len(hit_objects) - config['max_hit_objects'] + 1))
   selected_hit_objects = hit_objects[start_idx:start_idx + config['max_hit_objects']]
-  if start_idx == 0:
-    selected_hit_objects.insert(0, HIT_OBJECT_START_TOKEN)
-    start_time = 0
-  else:
-    start_time = int(selected_hit_objects[0].split(',')[2])
-
-  if start_idx + config['max_hit_objects'] == len(hit_objects):
-    selected_hit_objects.append(HIT_OBJECT_END_TOKEN)
 
   selected_time_points = time_points
-
-  if audio_data is not None:
-    # TODO: Figure out what the end time for the audio should be
-    # selected_audio = audio_data[start_time:]
-    selected_audio = audio_data
-  else:
-    # selected_audio = [[(np.zeros(80) if ((hit[2]//config["segment_length"] + i) < 0 or (hit[2]//config["segment_length"] + i) >= len(audio_data)) else audio_data[hit[2]//config["segment_length"] + i]) for i in range(-config["prev_audio_segments_per_hitobject"], config["next_audio_segments_per_hitobject"] + 1)] for hit in selected_hit_objects]
-    selected_audio = []
+  selected_audio = audio_data if audio_data is not None else []
 
   return selected_metadata, selected_time_points, \
          selected_hit_objects, selected_audio
@@ -272,6 +264,14 @@ def format_time_points(time_points):
 
   return new_time_points, slider_changes
 
+def tp_to_beat_len(time_point):
+  """Converts a time point to beat_len"""
+  return float(time_point.split(',')[1])
+
+def tp_to_time(time_point):
+  """Converts a time point to beat_len"""
+  return float(time_point.split(',')[0])
+
 def get_time_points_in_range(time_points, hit_objects, slider_changes=None):
   """
   Returns a list of time points and slider changes that are in the range of the hit objects.
@@ -298,7 +298,7 @@ def get_time_points_in_range(time_points, hit_objects, slider_changes=None):
   selected_time_points = selected_time_points[::-1]
 
   if len(selected_time_points) == 0:
-    selected_time_points = time_points[0]
+    selected_time_points = [time_points[0]]
 
   first_time_step = float(selected_time_points[0].split(',')[0])
 
@@ -388,42 +388,50 @@ def convert_to_relative_time(hit_objects, time_points):
   time_point_idx = 0
   ho_beat_lengths = []
   new_hit_objects = []
-  for i in range(1, len(hit_objects)):
+  # TODO: Start token currently not included in training data
+  for i in range(len(hit_objects)):
     if hit_objects[i] in (HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN):
+      # If start or end object
       new_hit_objects.append(hit_objects[i])
+      beat_length = beat_lengths[time_point_idx]
+    elif i == 0:
+      # If first object and not the start/end
       continue
-
-    # Key time_point_idx at the last time point before the hit object
-    is_last_time_point = time_point_idx == len(time_point_times) - 1
-    while not is_last_time_point \
-          and hit_object_times[i] >= time_point_times[time_point_idx + 1]:
-      time_point_idx += 1
+    else:
+      # For all other hit objects
+      # Key time_point_idx at the last time point before the hit object
       is_last_time_point = time_point_idx == len(time_point_times) - 1
+      while not is_last_time_point \
+            and hit_object_times[i] >= time_point_times[time_point_idx + 1]:
+        time_point_idx += 1
+        is_last_time_point = time_point_idx == len(time_point_times) - 1
     
-    # Compute the relative time string
-    beat_length = beat_lengths[time_point_idx]
-    last_ho_time = hit_object_times[i - 1]
-    ho_time = hit_object_times[i]
-    time_diff = ho_time - last_ho_time
-    time_diff_str = format_time_diff(time_diff, beat_length)[0]
+      # Compute the relative time string
+      beat_length = beat_lengths[time_point_idx]
+      last_ho_time = hit_object_times[i - 1]
+      ho_time = hit_object_times[i]
+      time_diff = ho_time - last_ho_time
+      time_diff_str = format_time_diff(time_diff, beat_length)[0]
 
-    # Create the new hit object with the relative time string
-    hit_object_data = hit_objects[i].split(',')
-    new_hit_objects.append(','.join(hit_object_data[:2] + [time_diff_str] + hit_object_data[3:]))
+      # Create the new hit object with the relative time string
+      hit_object_data = hit_objects[i].split(',')
+      new_hit_objects.append(','.join(hit_object_data[:2] + [time_diff_str] + hit_object_data[3:]))
     ho_beat_lengths.append(beat_length)
 
   return new_hit_objects, ho_beat_lengths
 
-def get_relative_time_beats(hit_object):
+def get_relative_time_beats(time_str):
   """
   Gets the number of beats in a relative time string.
   """
-  beats = float(hit_object[0])
-  if len(hit_object) <= 1 or hit_object[1] != ':':
+  parts = time_str.split(':')
+  beats = float(parts[0])
+  if len(parts) <= 1:
     return beats
 
-  for i in range(2, len(hit_object)):
-    beats += 1 / (2 ** (i - 1))
+  for i, is_beat in enumerate(parts[1]):
+    if is_beat == '1':
+      beats += 1 / (2 ** (i + 1))
   return beats
 
 def get_hit_object_time(hit_object, relative=False):
@@ -476,7 +484,7 @@ def format_training_data(
   orig_hit_objects = hit_objects
   f_time_points, slider_changes = get_time_points_in_range(
     f_time_points, hit_objects, slider_changes)
-  r_hit_objects, bpms = convert_to_relative_time(hit_objects, f_time_points)
+  r_hit_objects, beat_lens = convert_to_relative_time(hit_objects, f_time_points)
 
   if config['relative_timing']:
     hit_objects = r_hit_objects
@@ -497,23 +505,25 @@ def format_training_data(
   if config.get('max_hit_objects'):
     f_hit_objects = f_hit_objects[:config.get('max_hit_objects')]
 
+  # Insert audio into the hit objects
+  # and get corresponding audio segments
   if audio_data != [] and audio_data is not None:
     audio_segments = []
     orig_ho_idx = 0
     prev_ho_time = 0
     for i in range(len(f_hit_objects)):
       if f_hit_objects[i] == BREAK_TOKEN:
-        bpm = bpms[orig_ho_idx - 1]
-        ho_time = prev_ho_time + config['break_length'] * bpms[orig_ho_idx - 1]
+        beat_len = beat_lens[orig_ho_idx - 1]
+        ho_time = prev_ho_time + config['break_length'] * beat_lens[orig_ho_idx - 1]
       else:
-        bpm = bpms[orig_ho_idx]
+        beat_len = beat_lens[orig_ho_idx]
         ho_time = get_hit_object_time(orig_hit_objects[orig_ho_idx], relative=False)
         orig_ho_idx += 1
         if ho_time == -1:
           continue
 
       start_idx = int(ho_time * config['sample_rate'] / 1000)
-      end_idx = int((ho_time + bpm * config['break_length']) * config['sample_rate'] / 1000)
+      end_idx = int((ho_time + beat_len * config['break_length']) * config['sample_rate'] / 1000)
       segment = audio_data[start_idx:end_idx]
 
       if end_idx > len(audio_data):
@@ -530,22 +540,52 @@ def format_training_data(
 
   n_audio_tokens = 0 if audio_segments is None else config['audio_tokens_per_segment']
   for ho in f_hit_objects:
-    if ho in [HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN]:
+    if ho in [HIT_OBJECT_START_TOKEN, HIT_OBJECT_END_TOKEN, BREAK_TOKEN]:
       pred_str += ho
     else:
       pred_str += f'<HitObject>{ho}'
     
     if n_audio_tokens > 0 and ho != HIT_OBJECT_END_TOKEN:
-      pred_str += '<AudioSegment>'
-      pred_str += '<AudioPlaceholder>' * n_audio_tokens
+      pred_str += AUDIO_SEGMENT_TOKEN
+      pred_str += AUDIO_PLACEHOLDER_TOKEN * n_audio_tokens
 
   return prior_str, pred_str, audio_segments
 
-def map_to_train_data(map, preprocess_text, config, device=None):
+def random_clip_ho_string_start(
+  ho_str, preprocess_text, itos, stop_token=None, max_len=20):
+  """
+  Randomly cuts off the start of a hit object sequence
+  without cutting through audio, so that the model does not
+  expect to always start with the same input.
+  """
+  tokens = preprocess_text(ho_str)
+
+  if stop_token is not None:
+    stop_idxs = np.where(np.array(tokens[:max_len]) == stop_token)[0]
+    if len(stop_idxs) > 0:
+      stop_idx = stop_idxs[0]
+      max_len = min(max_len, stop_idx)
+  
+  cut_idx = np.random.randint(0, max_len + 1)
+  tokens = tokens[cut_idx:]
+  new_str = ''.join([itos[token] for token in tokens])
+
+  return new_str
+
+def map_to_train_data(map, preprocess_text, config, itos=None, device=None):
   batch_samples = [sample_from_map(*m, config) for m in [map]]
   training_samples = [format_training_data(*m, config) for m in batch_samples]
 
   src, tgt, audio_segments = zip(*training_samples)
+
+  if itos is not None:
+    stop_token = preprocess_text(AUDIO_PLACEHOLDER_TOKEN)[0]
+    tgt = [random_clip_ho_string_start(
+      t, preprocess_text, itos, stop_token) \
+      if t[:len(HIT_OBJECT_START_TOKEN)] != HIT_OBJECT_START_TOKEN \
+      else t \
+      for t in tgt]
+
   # Convert text to numerical tensors with padding and corresponding masks
   src_tensor, tgt_tensor, src_mask, tgt_mask = \
     prepare_tensor_seqs(src, tgt, preprocess_text, config, device=device)
@@ -568,10 +608,13 @@ def map_to_train_data(map, preprocess_text, config, device=None):
          audio_segments, audio_idxs, target
 
 def map_to_train_collate(batch):
+  batch = [sample for sample in batch if sample is not None]
   cat_dims = [1, 1, None, None, 0, 1, 1] # Dimensions to concatenate
   out_data = []
   for tensors, dim in zip(zip(*batch), cat_dims):
-    if dim is None:
+    if tensors[0] is None:
+      out_data.append(None)
+    elif dim is None:
       out_data.append(tensors[0])
     else:
       out_data.append(torch.cat(tensors, dim))

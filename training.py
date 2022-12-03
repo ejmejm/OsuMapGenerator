@@ -1,15 +1,13 @@
 from einops import rearrange
 import numpy as np
 import torch
-from torch import nn
 from torch.nn import functional as F
 from tqdm import tqdm
 
 from models import model_from_config
-from preprocessing.data_loading import get_dataloaders, sample_from_map
-from preprocessing.data_loading import format_training_data, AUDIO_PLACEHOLDER_TOKEN
-from preprocessing.text_processing import get_text_preprocessor, prepare_tensor_seqs
-from preprocessing.audio_processing import prepare_audio_tensor
+from gpt_model import gpt_from_config
+from preprocessing.data_loading import get_dataloaders, AUDIO_PLACEHOLDER_TOKEN
+from preprocessing.text_processing import get_text_preprocessor
 from utils import load_config, log, parse_args
 
 
@@ -18,11 +16,15 @@ MAX_HIT_OBJECTS = 100
 
 
 def eval(model, data_loader, preprocess_text, config):
+  pad_token = preprocess_text('<pad>')[0]
+  audio_placeholder_token = preprocess_text(AUDIO_PLACEHOLDER_TOKEN)[0]
+
   loss_hist = []
   model.eval()
   for batch in tqdm(data_loader):
     src_tensor, tgt_tensor, src_mask, tgt_mask, \
-    audio_segments, audio_idxs, target = batch
+    audio_segments, audio_idxs, target = \
+      [None if x is None else x.to(config['device']) for x in batch]
 
     with torch.no_grad():
       output = model(
@@ -30,19 +32,29 @@ def eval(model, data_loader, preprocess_text, config):
         audio=audio_segments, audio_mask=audio_idxs)
     output = rearrange(output, 's b d -> b d s')
     target = rearrange(target, 's b -> b s')
-    audio_idxs = rearrange(audio_idxs, 's b -> b s')
-    audio_mask = ~audio_idxs
 
     with torch.no_grad():
       losses = F.cross_entropy(output, target, reduction='none')
-      losses = losses.masked_select(audio_mask)
-      loss = losses.mean()
+
+    # Mask out the pad tokens
+    loss_mask = target != pad_token
+
+    if config['include_audio']:
+      audio_idxs = rearrange(audio_idxs, 's b -> b s')
+      audio_mask = target != audio_placeholder_token
+      loss_mask = loss_mask & audio_mask
+
+    losses = losses.masked_select(loss_mask)
+    loss = losses.mean()
     loss_hist.append(loss.item())
 
   return loss_hist
   
 
 def train(model, train_loader, optimizer, preprocess_text, config, val_loader=None):
+  pad_token = preprocess_text('<pad>')[0]
+  audio_placeholder_token = preprocess_text(AUDIO_PLACEHOLDER_TOKEN)[0]
+
   last_eval = 0
   curr_idx = 0
 
@@ -52,7 +64,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       model.train()
       src_tensor, tgt_tensor, src_mask, tgt_mask, \
       audio_segments, audio_idxs, target = \
-        [x.to(config['device']) for x in batch]
+        [None if x is None else x.to(config['device']) for x in batch]
 
       # Pass the data through the model
       output = model(
@@ -62,12 +74,20 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       # Rearrange data to be batch first
       output = rearrange(output, 's b d -> b d s')
       target = rearrange(target, 's b -> b s')
-      audio_idxs = rearrange(audio_idxs, 's b -> b s')
-      audio_mask = ~audio_idxs
 
       # Calculate loss
       losses = F.cross_entropy(output, target, reduction='none')
-      losses = losses.masked_select(audio_mask)
+
+      # Mask out the pad tokens
+      loss_mask = target != pad_token
+
+      # Mask out losses for audio tokens
+      if config['include_audio']:
+        audio_idxs = rearrange(audio_idxs, 's b -> b s')
+        audio_mask = target != audio_placeholder_token
+        loss_mask = loss_mask & audio_mask
+
+      losses = losses.masked_select(loss_mask)
       loss = losses.mean()
       
       loss_hist.append(loss.item())
@@ -77,6 +97,7 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
       # Backprop
       optimizer.zero_grad()
       loss.backward()
+      torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
       optimizer.step()
 
       curr_idx += len(batch)
@@ -87,8 +108,10 @@ def train(model, train_loader, optimizer, preprocess_text, config, val_loader=No
         print(f'Epoch {epoch_idx} | Sample #{curr_idx} | Eval loss: {np.mean(eval_losses):.3f}')
         log({'epoch': epoch_idx, 'eval_loss': np.mean(eval_losses)}, config)
 
-        if 'model_save_path' in config:
+        if config.get('save_model', True):
+          print('Saving model...')
           torch.save(model.state_dict(), config['model_save_path'])
+          print('Model saved!')
 
   return losses
 
@@ -101,6 +124,9 @@ if __name__ == '__main__':
   if config['use_wandb']:
     import wandb
     wandb.init(project=config['wandb_project'], config=config)
+
+  if config['n_load_workers'] > 0:
+    torch.multiprocessing.set_start_method('spawn', force=True)
   
   # Get data loaders
   preprocess_text, vocab = get_text_preprocessor(config)
@@ -109,9 +135,16 @@ if __name__ == '__main__':
   # print(vocab.get_itos())
 
   # Create model and load when applicable
-  model = model_from_config(config, vocab)
-  print('# params:', sum(p.numel() for p in model.parameters()))
-  optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
+  if config.get('use_gpt', False):
+    print('Using GPT model')
+    model = gpt_from_config(config, vocab)
+    print('# params:', sum(p.numel() for p in model.parameters()))
+    optimizer = model.configure_optimizers(config)
+  else:
+    print('Using standard model')
+    model = model_from_config(config, vocab)
+    print('# params:', sum(p.numel() for p in model.parameters()))
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
 
   # Train the model
   try:
@@ -120,9 +153,10 @@ if __name__ == '__main__':
     print('Training interrupted.')
 
   # Save the final model
-  if 'model_save_path' in config:
+  if config.get('save_model', True):
+    print('Saving model...')
     torch.save(model.state_dict(), config['model_save_path'])
-  print('Model saved!')
+    print('Model saved!')
 
   # Test the model
   if test_loader is not None:

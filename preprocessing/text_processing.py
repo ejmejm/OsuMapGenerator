@@ -8,7 +8,6 @@ from torch.nn import functional as F
 import torchtext as tt
 
 from models import gen_seq_mask
-from utils import load_config
 
 
 def default_tokenize(string):
@@ -68,7 +67,7 @@ def prepare_tensor_seq(seq, max_len, preprocess_text, config, pad=True, device=N
 
   seq_tensors = []
   for s in seq:
-    seq_tensors.append(torch.tensor(s[-max_len:], dtype=torch.int64))
+    seq_tensors.append(torch.tensor(s[:max_len], dtype=torch.int64))
     if pad:
       pad_len = max_len - len(seq_tensors[-1])
       seq_tensors[-1] = F.pad(seq_tensors[-1], (0, pad_len), value=PAD_TOKEN)
