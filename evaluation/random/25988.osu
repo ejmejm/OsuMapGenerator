@@ -1,3 +1,88 @@
+osu file format v14
+
+[General]
+AudioFilename: 5631.mp3
+AudioLeadIn: 2500
+PreviewTime: 51770
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+Bookmarks: 152970
+DistanceSpacing: 1.2
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1
+
+[Metadata]
+Title:Shuumatsu no Sugoshikata yori
+TitleUnicode:終末の過ごし方より
+Artist:Nekono Comet
+ArtistUnicode:猫野こめっと
+Creator:Kin
+Version:Normal
+Source:ナルキッソス
+Tags:Narcissu Rather Than a Life of Finality From The World is Coming to an W/end Stage nana Kometto 矢野雅士 Masashi Yano
+BeatmapID:594781
+BeatmapSetID:170461
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:3
+OverallDifficulty:3
+ApproachRate:4
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"Narcissu BG.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+1370,800,4,2,1,30,1,0
+50170,-100,4,2,1,40,0,0
+50370,-100,4,2,1,30,0,0
+52570,-100,4,2,1,30,0,1
+62170,-100,4,2,1,30,0,0
+65370,-100,4,2,1,30,0,1
+74970,-100,4,2,1,30,0,0
+78170,-100,4,2,1,30,0,1
+87770,-100,4,2,1,30,0,0
+90970,-100,4,2,1,30,0,1
+100570,-100,4,2,1,30,0,0
+101370,-100,4,2,1,40,0,0
+101570,-100,4,2,1,30,0,0
+126970,-100,4,2,1,40,0,0
+127170,-100,4,2,1,30,0,0
+154970,-100,4,2,1,30,0,1
+164570,-100,4,2,1,30,0,0
+167770,-100,4,2,1,30,0,1
+177370,-100,4,2,1,30,0,0
+180570,-100,4,2,1,30,0,1
+190170,-100,4,2,1,30,0,0
+193370,-100,4,2,1,30,0,1
+202970,-100,4,2,1,30,0,0
+203770,-100,4,2,1,40,0,0
+203970,-100,4,2,1,30,0,0
+205370,-100,4,2,1,5,0,0
+205570,-100,4,2,1,30,0,0
+
+
+[Colours]
+Combo1 : 237,88,167
+Combo2 : 180,180,180
+Combo3 : 0,128,192
+
 [HitObjects]
 85,75,8682
 14,0,9291

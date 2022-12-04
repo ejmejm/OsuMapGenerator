@@ -1,3 +1,70 @@
+osu file format v5
+
+[General]
+AudioFilename: 11433.mp3
+AudioLeadIn: 0
+PreviewTime: -1
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.6
+Mode: 0
+LetterboxInBreaks: 1
+StoryFireInFront: 0
+EditorBookmarks: 88048,88282,88516,88956,90125,90387
+EditorDistanceSpacing: 0.800000011920929
+
+[Metadata]
+Title:Gang-Plank Galleon
+Artist:David Wise
+Creator:Hara
+Version:Larry Kong
+Source:Donkey Kong Country
+Tags:dkc donkey kong country david wise game nintendo rare awesome larto lardo lardass larry lard
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:5
+OverallDifficulty:7
+SliderMultiplier:1.9
+SliderTickRate:2
+
+[Events]
+//Background and Video events
+0,0,"Let's try this2.jpg"
+//Break Periods
+2,24439,29600
+2,52679,59529
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Failing)
+//Storyboard Layer 2 (Passing)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,255,255,255
+
+[TimingPoints]
+4000.47317448147,546.445255474455,4,2,0,85,1,0
+13836,545.454545454545,4,2,0,85,1,0
+18200,528.63436123348,4,2,0,85,1,0
+22460,508.474576271186,4,2,0,85,1,0
+28556,497.92531120332,4,2,0,85,1,0
+29551,478.697941598851,4,2,0,85,1,0
+30500,467.653936087295,4,1,0,47,1,0
+37810,-100,4,2,0,60,0,0
+59962,-100,4,1,0,35,0,0
+60429,-200,4,1,0,46,0,0
+64872,-50,4,1,0,41,0,0
+65807,-100,4,1,0,40,0,0
+68379,-200,4,1,0,39,0,0
+69549,-100,4,1,0,43,0,0
+70250,-200,4,1,0,43,0,0
+71302,-100,4,1,0,40,0,0
+
+[Colours]
+Combo1 : 143,67,58
+Combo2 : 244,0,0
+Combo3 : 234,238,81
+
 [HitObjects]
 431,94,1823
 424,150,2353

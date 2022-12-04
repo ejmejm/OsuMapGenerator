@@ -1,3 +1,77 @@
+osu file format v9
+
+[General]
+AudioFilename: 7533.mp3
+AudioLeadIn: 0
+PreviewTime: 13060
+Countdown: 0
+SampleSet: Normal
+StackLeniency: 0.3
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 4
+
+[Metadata]
+Title:Ray of Illuminati
+Artist:ESTi
+Creator:fanzhen0019
+Version:Easy
+Source:DJMAX
+Tags:loveFantasy mekadon Portable Trilogy Fever Hot Tunes Technika2
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:3
+OverallDifficulty:2
+ApproachRate:2
+SliderMultiplier:1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"BG.jpg"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+364,400,4,1,2,70,1,0
+6764,-100,4,1,2,70,0,0
+9964,-153.846153846154,4,1,2,70,0,0
+10364,-153.846153846154,4,1,2,5,0,0
+10764,-153.846153846154,4,1,2,70,0,0
+11964,-153.846153846154,4,1,2,5,0,0
+12364,-153.846153846154,4,1,2,70,0,0
+13164,-100,4,1,2,70,0,1
+25964,-100,4,2,0,70,0,0
+32364,-100,4,1,2,70,0,0
+62964,-100,4,1,2,5,0,0
+64164,-100,4,1,2,70,0,0
+72264,-100,4,2,0,70,0,0
+72464,-100,4,1,2,70,0,0
+78664,-100,4,2,0,70,0,0
+78864,-100,4,1,2,70,0,0
+85064,-100,4,2,0,70,0,0
+85264,-100,4,1,2,70,0,0
+104364,-100,4,1,2,5,0,0
+110764,-100,4,1,2,70,0,1
+123564,-100,4,2,0,5,0,0
+
+[Colours]
+Combo1 : 11,163,244
+Combo2 : 122,231,245
+Combo3 : 245,245,137
+Combo4 : 6,242,255
+
 [HitObjects]
 162,264,4412
 403,447,5123

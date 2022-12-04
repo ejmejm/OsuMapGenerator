@@ -1,3 +1,68 @@
+osu file format v9
+
+[General]
+AudioFilename: 7424.mp3
+AudioLeadIn: 1000
+PreviewTime: 44959
+Countdown: 0
+SampleSet: Normal
+StackLeniency: 0.5
+Mode: 0
+LetterboxInBreaks: 0
+StoryFireInFront: 0
+EpilepsyWarning: 1
+
+[Editor]
+Bookmarks: 19447
+DistanceSpacing: 0.8
+BeatDivisor: 4
+GridSize: 4
+
+[Metadata]
+Title:(9) Destiny ~ Ever Lasting Turn of Cirno
+Artist:Silver Forest
+Creator:Leorda
+Version:Cold
+Source:Touhou
+Tags:the embodiment of scarlet devil beloved tomboyish girl stage 2 boss cirno baka fool NYO
+
+[Difficulty]
+HPDrainRate:4
+CircleSize:4
+OverallDifficulty:4
+ApproachRate:6
+SliderMultiplier:1.3
+SliderTickRate:2
+
+[Events]
+//Background and Video events
+0,0,"wallpaper-717107.jpg"
+//Break Periods
+2,33960,42465
+2,67446,77005
+2,123260,135948
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+278,348.777209302326,4,2,0,70,1,0
+44921,-100,4,1,0,70,0,1
+67243,-100,4,2,0,70,0,0
+100725,-100,4,1,0,70,0,1
+123047,-100,4,2,0,70,0,0
+138393,-100,4,1,0,70,0,1
+160715,-100,4,2,0,70,0,0
+
+[Colours]
+Combo1 : 56,153,250
+Combo2 : 151,220,240
+Combo3 : 10,67,137
+
 [HitObjects]
 446,223,9555
 364,135,9773

@@ -1,3 +1,85 @@
+osu file format v12
+
+[General]
+AudioFilename: 11061.mp3
+AudioLeadIn: 0
+PreviewTime: 40902
+Countdown: 1
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 1
+BeatDivisor: 3
+GridSize: 4
+TimelineZoom: 1
+
+[Metadata]
+Title:Aa, Subarashiki Nyansei
+TitleUnicode:嗚呼、素晴らしきニャン生
+Artist:Nem
+ArtistUnicode:Nem
+Creator:CDFA
+Version:Nyan!
+Source:
+Tags:Megpoid Gumi Kagamine Len Vocaloid Ah, It's A Wonderful Cat Life
+BeatmapID:163935
+BeatmapSetID:53833
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:4
+OverallDifficulty:8
+ApproachRate:9
+SliderMultiplier:2.2
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"lengumibg.jpg",0,0
+Video,0,"jonathanlfjsucks.flv"
+//Break Periods
+2,60884,69966
+2,120265,129348
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+1302.63429887917,309.278350515464,4,1,0,70,1,0
+10890,-100,4,2,0,70,0,0
+21096,-100,4,1,0,70,0,0
+40890,-100,4,1,0,70,0,1
+59446,-100,4,1,0,70,0,0
+60684,-100,4,1,0,70,0,1
+60787,-100,4,1,0,70,0,0
+70477,-100,4,2,0,70,0,0
+80374,-100,4,1,0,70,0,0
+100271,-100,4,1,0,70,0,1
+118828,-100,4,1,0,70,0,0
+120065,-100,4,1,0,70,0,1
+120168,-100,4,1,0,70,0,0
+128725,-100,4,2,1,70,0,0
+138622,-100,4,1,0,70,0,0
+152230,-100,4,1,0,70,0,1
+190580,-100,4,1,0,70,0,0
+191818,-100,4,1,0,70,0,1
+191921,-100,4,1,0,70,0,0
+
+
+[Colours]
+Combo1 : 255,123,60
+Combo2 : 0,202,0
+Combo3 : 232,232,232
+Combo4 : 248,231,24
+
 [HitObjects]
 160,307,6123
 589,263,6277

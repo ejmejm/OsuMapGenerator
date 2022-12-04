@@ -1,3 +1,109 @@
+osu file format v14
+
+[General]
+AudioFilename: 14740.mp3
+AudioLeadIn: 2000
+PreviewTime: 106314
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.3
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+Bookmarks: 138,7049,16608,26020,35432,47049,64843,75432,84843,94255,105873,124843,134255,146020,169402,186020,195432,197785,205726
+DistanceSpacing: 1.5
+BeatDivisor: 4
+GridSize: 32
+TimelineZoom: 1.3
+
+[Metadata]
+Title:Black Rover
+TitleUnicode:Black Rover
+Artist:Vickeblanka
+ArtistUnicode:ビッケブランカ
+Creator:zhu
+Version:moph's Insane
+Source:ブラッククローバー
+Tags:clover opening op full version ver anime japanese faputa habiholic walaowey moph
+BeatmapID:1908522
+BeatmapSetID:913669
+
+[Difficulty]
+HPDrainRate:5.4
+CircleSize:4
+OverallDifficulty:8
+ApproachRate:9.1
+SliderMultiplier:1.54
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bg.jpg",0,0
+Video,-1300,"video.mp4"
+//Break Periods
+2,66215,70126
+2,136803,145420
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+133,294.117647058824,4,2,1,40,1,0
+133,-200,4,2,1,40,0,0
+7044,-100,4,2,1,60,0,1
+16603,-133.333333333333,4,2,1,45,0,0
+26015,-100,4,2,1,50,0,0
+35427,-133.333333333333,4,2,1,40,0,0
+44838,-200,4,2,1,40,0,0
+47044,-80,4,2,1,65,0,1
+55427,-100,4,2,1,65,0,1
+56456,-57.1428571428571,4,2,1,65,0,1
+56897,-80,4,2,1,65,0,1
+64838,-100,4,2,1,40,0,0
+75427,-100,4,2,1,45,0,0
+84838,-100,4,2,1,50,0,0
+94250,-133.333333333333,4,2,1,40,0,0
+105868,-80,4,2,1,65,0,1
+114250,-100,4,2,1,65,0,1
+115280,-57.1428571428571,4,2,1,65,0,1
+115721,-80,4,2,1,65,0,1
+124838,-80,4,2,1,70,0,1
+134250,-200,4,2,1,40,0,0
+146015,-200,4,2,1,45,0,0
+155427,-133.333333333333,4,2,1,45,0,0
+163074,-100,4,2,1,45,0,0
+164838,-100,4,2,1,50,0,0
+165427,-80,4,2,1,50,0,0
+166015,-66.6666666666667,4,2,1,50,0,0
+167044,-133.333333333333,4,2,1,50,0,0
+168662,-100,4,2,1,50,0,0
+168956,-80,4,2,1,50,0,0
+169250,-66.6666666666667,4,2,1,50,0,0
+169397,-57.1428571428571,4,2,1,65,0,1
+169838,-80,4,2,1,65,0,1
+175427,-100,4,2,1,65,0,1
+176456,-57.1428571428571,4,2,1,65,0,1
+176897,-80,4,2,1,65,0,1
+186015,-66.6666666666667,4,2,1,75,0,1
+195427,-200,4,2,1,40,0,0
+197780,-100,4,2,2,50,0,0
+204838,-250,4,2,2,50,0,0
+204985,-250,4,2,2,5,0,0
+205721,-100,4,2,1,5,0,0
+
+
+[Colours]
+Combo1 : 202,170,128
+Combo2 : 192,36,6
+Combo3 : 246,196,103
+Combo4 : 207,93,5
+SliderBorder : 252,255,206
+
 [HitObjects]
 209,269,6322
 354,54,7200

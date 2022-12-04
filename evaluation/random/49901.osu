@@ -1,3 +1,51 @@
+osu file format v5
+
+[General]
+AudioFilename: 10932.mp3
+AudioLeadIn: 0
+PreviewTime: -1
+Countdown: 1
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Metadata]
+Title:Bumble Bee
+Artist:Bambee
+Creator:Skyripper
+Version:Expert
+Source:
+Tags:
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:5
+OverallDifficulty:7
+SliderMultiplier:1.4
+SliderTickRate:2
+
+[Events]
+//Background and Video events
+0,0,"Bumble Bee-bg.png"
+//Break Periods
+2,52119,56671
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Failing)
+//Storyboard Layer 2 (Passing)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,255,255,0
+
+[TimingPoints]
+8876,434.782608695652,4,1,0,90,1
+
+[Colours]
+Combo1 : 255,196,196
+Combo2 : 255,255,117
+Combo3 : 255,215,174
+
 [HitObjects]
 354,114,7995
 315,321,8538

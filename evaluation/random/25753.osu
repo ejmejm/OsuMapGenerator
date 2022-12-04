@@ -1,3 +1,74 @@
+osu file format v7
+
+[General]
+AudioFilename: 5576.mp3
+AudioLeadIn: 2000
+PreviewTime: 42942
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.8
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+DistanceSpacing: 0.800000011920929
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:JAP (TV Size)
+Artist:Abingdon Boys School
+Creator:Licnect
+Version:Blue
+Source:Sengoku BASARA
+Tags:
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:4
+OverallDifficulty:7
+SliderMultiplier:1.3
+SliderTickRate:0.5
+
+[Events]
+//Background and Video events
+Video,-150,"JAP-Sengoku Basara OP(TV version).avi"
+0,0,"bg3.jpg"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,255,255,255
+
+[TimingPoints]
+2750,300,4,2,0,50,1,0
+2967,-100,4,2,1,80,0,0
+6500,-100,4,2,2,80,0,0
+7467,-100,4,2,1,80,0,0
+16250,-100,4,2,2,80,0,0
+17300,-100,4,2,1,80,0,0
+26044,-100,4,2,2,80,0,0
+41000,-100,4,1,0,50,0,0
+42650,-200,4,2,0,51,0,0
+43400,-100,4,2,2,80,0,1
+53150,-100,4,2,2,80,0,0
+67692,-100,4,2,1,80,0,0
+69950,-100,4,2,2,80,0,0
+85475,-100,4,2,2,0,0,0
+85617,-100,4,2,0,80,0,0
+86000,-100,4,2,0,0,0,0
+86225,-100,4,2,0,80,0,0
+86450,-100,4,2,0,80,0,1
+86592,-100,4,2,0,0,0,0
+
+[Colours]
+Combo1 : 3,106,209
+Combo2 : 129,129,243
+Combo3 : 254,78,82
+
 [HitObjects]
 35,157,4452
 65,55,5402

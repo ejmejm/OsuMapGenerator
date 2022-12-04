@@ -1,3 +1,59 @@
+osu file format v7
+
+[General]
+AudioFilename: 1934.mp3
+AudioLeadIn: 0
+PreviewTime: 59362
+Countdown: 1
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+DistanceSpacing: 0.899999976158142
+BeatDivisor: 2
+GridSize: 8
+
+[Metadata]
+Title:Rewrite
+Artist:Asian Kung-Fu Generation
+Creator:deadbeat
+Version:Deadbeat's adept alchemy
+Source:full metal alchemist Sol-fa
+Tags:fma Xero_HT Dangaard Roxkyuubiforever
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:4
+OverallDifficulty:3
+SliderMultiplier:1.1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"Full-Metal-Alchemist-29011.jpg"
+//Break Periods
+2,31070,35129
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+368,335.195530726257,4,2,0,100,1,0
+59338,-100,4,2,0,100,0,1
+80814,-100,4,2,0,100,0,0
+
+[Colours]
+Combo1 : 192,192,192
+Combo2 : 241,209,29
+Combo3 : 255,0,0
+Combo4 : 0,0,0
+
 [HitObjects]
 583,271,2777
 133,238,3273

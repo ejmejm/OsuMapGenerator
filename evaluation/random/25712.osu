@@ -1,3 +1,61 @@
+osu file format v7
+
+[General]
+AudioFilename: 5570.mp3
+AudioLeadIn: 0
+PreviewTime: 12091
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.4
+Mode: 0
+LetterboxInBreaks: 0
+
+[Editor]
+Bookmarks: 23630,150360,157476
+DistanceSpacing: 0.899999976158142
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:Beethoven Virus (Full ver.)
+Artist:Banya
+Creator:wmfchris
+Version:Jameskong1's Normal
+Source:
+Tags:Amethyst Wolf climbb65588 vikon aesopl19193 jameskong1 Angelhoney AHo
+
+[Difficulty]
+HPDrainRate:1
+CircleSize:3
+OverallDifficulty:2
+SliderMultiplier:1
+SliderTickRate:0.5
+
+[Events]
+//Background and Video events
+0,0,"beethoven.png"
+//Break Periods
+2,81906,85147
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+6707,384.615384615385,4,2,0,71,1,0
+105168,-200,4,2,0,71,0,0
+117476,-100,4,2,0,71,0,0
+
+[Colours]
+Combo1 : 248,211,171
+Combo2 : 171,251,202
+Combo3 : 175,211,254
+Combo4 : 249,244,186
+Combo5 : 240,80,81
+
 [HitObjects]
 349,249,3856
 344,222,4043

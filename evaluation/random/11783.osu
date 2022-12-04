@@ -1,3 +1,87 @@
+osu file format v14
+
+[General]
+AudioFilename: 2560.mp3
+AudioLeadIn: 0
+PreviewTime:59098
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.5
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+Bookmarks: 22833,45421,70833,82127
+DistanceSpacing: 0.5
+BeatDivisor: 4
+GridSize: 8
+TimelineZoom: 1.4
+
+[Metadata]
+Title:over and over (TV Size)
+TitleUnicode:over and over (TV Size)
+Artist:Iguchi Yuka
+ArtistUnicode:井口裕香
+Creator:Sotarks
+Version:Stratosu's Insane
+Source:ダンジョンに出会いを求めるのは間違っているだろうかⅢ
+Tags:rosiie kudosu stratos so0p soop op opening anime japanese pop jpop j-pop is it wrong to try pick up chiga in a dungeon? ni deai wo motomeru no wa machigatteiru darou ka III danmachi ダンまち 3rd third season that I want meet you familia myth yukachi clearly 御恵明希 aki mimegumi シド sid 渡辺拓也 female vocalist girls
+BeatmapID:2631591
+BeatmapSetID:1266199
+
+[Difficulty]
+HPDrainRate:4.7
+CircleSize:4.1
+OverallDifficulty:8.3
+ApproachRate:8.8
+SliderMultiplier:1.6
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bg.jpg"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+3069,352.941176470588,4,2,22,52,1,0
+3069,-181.818181818182,4,2,22,52,0,0
+10127,-181.818181818182,4,2,22,82,0,0
+10833,-133.333333333333,4,2,22,72,0,0
+11186,-90.9090909090909,4,2,22,72,0,0
+11539,-100,4,2,22,82,0,0
+22833,-121.951219512195,4,2,22,62,0,0
+32716,-86.9565217391304,4,2,22,82,0,0
+34127,-86.9565217391304,4,2,22,72,0,0
+34480,-100,4,2,22,72,0,0
+39774,-90.9090909090909,4,2,22,72,0,0
+40480,-100,4,2,22,72,0,0
+42245,-90.9090909090909,4,2,22,72,0,0
+45421,-111.111111111111,4,2,22,72,0,0
+53892,-105.263157894737,4,2,22,72,0,0
+58127,-105.263157894737,4,2,22,82,0,0
+58833,-105.263157894737,4,2,22,72,0,0
+59186,-95.2380952380954,4,2,22,72,0,0
+59539,-95.2380952380954,4,2,22,92,0,0
+74186,-74.0740740740741,4,2,22,92,0,0
+74892,-95.2380952380952,4,2,22,92,0,0
+75598,-74.0740740740741,4,2,22,92,0,0
+76127,-95.2380952380952,4,2,22,92,0,0
+82127,-176.36684303351,4,2,22,92,0,0
+82216,-176.36684303351,4,2,22,72,0,0
+83539,-95.2380952380952,4,2,22,82,0,0
+
+
+[Colours]
+Combo1 : 74,123,236
+Combo2 : 255,251,176
+
 [HitObjects]
 428,311,2680
 446,363,3046

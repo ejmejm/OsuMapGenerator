@@ -1,3 +1,73 @@
+osu file format v14
+
+[General]
+AudioFilename: 5437.mp3
+AudioLeadIn: 0
+PreviewTime: 42114
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+Bookmarks: 57436
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 16
+TimelineZoom: 1.4
+
+[Metadata]
+Title:Koi no Yukue (TV Size)
+TitleUnicode:恋ノ行方 (TV Size)
+Artist:Akase Akari
+ArtistUnicode:あかせあかり
+Creator:Airiesu
+Version:Koyoriesu's Normal
+Source:その着せ替え人形は恋をする
+Tags:Mujina Amateurre LeCandy Koyorin-sama Twil_Furano Anime ED Ending Japanese Pop j-pop jpop Sono Bisque Doll wa Koi wo Suru My Dress-Up Darling Sono Kisekae Ningyou wa Koi o Suru NA.ZU.NA
+BeatmapID:3413225
+BeatmapSetID:1670280
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:3
+OverallDifficulty:4
+ApproachRate:5
+SliderMultiplier:1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+Video,560,"VD ED.mp4"
+0,0,"bg.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+866,428.571428571429,4,2,1,60,1,0
+972,-100,4,2,1,30,0,0
+1294,-100,4,2,1,50,0,0
+1722,428.571428571429,4,2,1,70,1,0
+15436,-100,4,2,1,55,0,0
+16507,-105.263157894737,4,2,1,55,0,0
+36007,-105.263157894737,4,2,1,65,0,0
+42864,-100,4,2,1,80,0,0
+75436,-100,4,2,1,70,0,0
+
+
+[Colours]
+Combo1 : 17,254,176
+Combo2 : 173,255,95
+Combo3 : 255,88,100
+Combo4 : 255,94,55
+
 [HitObjects]
 53,65,5992
 228,240,6417

@@ -1,3 +1,67 @@
+osu file format v14
+
+[General]
+AudioFilename: 12902.mp3
+AudioLeadIn: 0
+PreviewTime: 56394
+Countdown: 1
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+SkinPreference:Default
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 0.6
+BeatDivisor: 4
+GridSize: 8
+TimelineZoom: 1.8
+
+[Metadata]
+Title:Leb deinen Traum
+TitleUnicode:Leb deinen Traum
+Artist:Frank Schindel
+ArtistUnicode:Frank Schindel
+Creator:Mao
+Version:Myxo's Normal
+Source:デジモンアドベンチャー
+Tags:Myxomatosis Bonsai Desperate-kun Digimon Adventures tv size opening op Andy Knote Kouji Wada 和田光司 Butter-fly butterfly Ikou Chiwata digital monsters german deutsch dub
+BeatmapID:1518160
+BeatmapSetID:718848
+
+[Difficulty]
+HPDrainRate:4
+CircleSize:4
+OverallDifficulty:5
+ApproachRate:5
+SliderMultiplier:1.9
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"digi.jpg",0,0
+Video,0,"digiop.avi"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+1213,363.636363636364,4,1,0,90,1,0
+41940,-100,4,1,0,90,0,0
+56485,-100,4,1,0,100,0,1
+79758,-100,4,1,0,90,0,0
+
+
+[Colours]
+Combo1 : 255,150,0
+Combo2 : 5,240,5
+Combo3 : 5,5,240
+Combo4 : 240,5,5
+
 [HitObjects]
 545,11,2274
 75,299,3225

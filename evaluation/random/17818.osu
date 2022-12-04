@@ -1,3 +1,86 @@
+osu file format v14
+
+[General]
+AudioFilename: 3874.mp3
+AudioLeadIn: 0
+PreviewTime:43737
+Countdown: 0
+SampleSet: None
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+DistanceSpacing: 1.4
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 2
+
+[Metadata]
+Title:I'M A BELIEVER (TV Size)
+TitleUnicode:アイム・ア・ビリーバー (TV Size)
+Artist:SPYAIR
+ArtistUnicode:SPYAIR
+Creator:Nevo
+Version:Addy's Hard
+Source:ハイキュー!! セカンドシーズン
+Tags:2nd second season japanese anime opening rock jrock vocal haikyu!! haikyuu!! volleyball show armin a_r_m_i_n synderes frostwich browiec sajinn addy2607 wanpachi Cycopton im
+BeatmapID:2955646
+BeatmapSetID:1435286
+
+[Difficulty]
+HPDrainRate:4
+CircleSize:3.4
+OverallDifficulty:6
+ApproachRate:8
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"haikyu-art-scale-6_00x.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+439,309.278350515464,4,2,1,70,1,0
+439,-125,4,2,1,70,0,0
+10335,-125,4,2,1,60,0,0
+19304,-125,4,2,1,70,0,0
+20232,-111.111111111111,4,2,1,70,0,0
+30129,-117.647058823529,4,2,1,70,0,0
+35078,-125,4,2,1,70,0,0
+37552,-111.111111111111,4,2,1,70,0,0
+40026,-125,4,2,1,70,0,0
+42500,-111.111111111111,4,2,1,70,0,0
+44820,-100,4,2,1,80,0,0
+64768,-111.111111111111,4,2,1,80,0,0
+66160,-111.111111111111,4,2,1,80,0,0
+67397,-111.111111111111,4,2,1,80,0,0
+71263,-111.111111111111,4,2,1,80,0,0
+71727,-111.111111111111,4,2,1,80,0,0
+71882,-111.111111111111,4,2,1,80,0,0
+72191,-95.2380952380952,4,2,1,80,0,0
+72346,-95.2380952380952,4,2,1,80,0,0
+76212,-95.2380952380952,4,2,1,80,0,0
+77294,-95.2380952380952,4,2,1,80,0,0
+82088,-111.111111111111,4,2,1,60,0,0
+85954,-111.111111111111,4,2,1,60,0,0
+90748,-125,4,2,1,60,0,0
+91598,-125,4,2,1,5,0,0
+
+
+[Colours]
+Combo1 : 253,207,102
+Combo2 : 255,128,0
+Combo3 : 192,192,192
+
 [HitObjects]
 406,245,264
 502,24,793

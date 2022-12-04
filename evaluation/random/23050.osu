@@ -1,3 +1,90 @@
+osu file format v14
+
+[General]
+AudioFilename: 5003.mp3
+AudioLeadIn: 0
+PreviewTime:58916
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.4
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+Bookmarks: 780,12416,24052,35689,47325,58961,82234,93870,105507,117143,128780,140416,152052,163689,175325,198598,210234,221870,229143,230780
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 32
+TimelineZoom: 1.5
+
+[Metadata]
+Title:Kiritorisen
+TitleUnicode:キリトリセン
+Artist:chano & 40mP
+ArtistUnicode:シャノ & 40mP
+Creator:Amateurre
+Version:Airiesu's Normal
+Source:Megpoid the Music♯
+Tags:midorijeon airiesu mujina wanpachi jpop j-pop japanese pop shano video game 40meterp # cover 40㍍ utaite sugar Cut-off Line vocaloid gumi cutoff
+BeatmapID:3288033
+BeatmapSetID:1604973
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:3
+OverallDifficulty:4
+ApproachRate:5
+SliderMultiplier:0.999999999999999
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"kiritorisen.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+780,363.636363636364,4,2,1,60,1,0
+780,-105.263157894737,4,2,1,60,0,0
+10598,-105.263157894737,4,2,2,60,0,0
+10780,-100,4,2,2,60,0,0
+12416,-100,4,2,2,70,0,0
+24052,-100,4,2,2,70,0,0
+47325,-105.263157894737,4,2,2,60,0,0
+53143,-100,4,2,2,70,0,0
+58961,-95.2380952380952,4,2,2,80,0,1
+82234,-100,4,2,2,70,0,0
+93870,-105.263157894737,4,2,3,70,0,0
+104052,-100,4,2,3,70,0,0
+104780,-100,4,2,2,70,0,0
+117143,-105.263157894737,4,2,2,60,0,0
+134598,-100,4,2,2,70,0,0
+140416,-100,4,2,2,70,0,0
+162780,-100,4,2,1,70,0,0
+162961,-100,4,2,2,70,0,0
+163143,-100,4,2,1,70,0,0
+163325,-100,4,2,2,70,0,0
+163507,-100,4,2,1,70,0,0
+163689,-111.111111111111,4,2,1,50,0,0
+169507,-105.263157894737,4,2,1,50,0,0
+172416,-100,4,2,1,50,0,0
+173325,-100,4,2,2,70,0,0
+175325,-95.2380952380952,4,2,2,80,0,1
+198598,-100,4,2,2,70,0,0
+229143,-100,4,2,2,70,0,0
+
+
+[Colours]
+Combo1 : 254,244,175
+Combo2 : 159,252,133
+Combo3 : 132,213,251
+
 [HitObjects]
 614,9,6690
 421,478,7354

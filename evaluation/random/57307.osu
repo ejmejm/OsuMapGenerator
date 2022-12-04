@@ -1,3 +1,72 @@
+osu file format v5
+
+[General]
+AudioFilename: 12406.mp3
+AudioLeadIn: 0
+PreviewTime: -1
+Countdown: 1
+SampleSet: Normal
+StackLeniency: 0.6
+Mode: 0
+LetterboxInBreaks: 1
+EditorBookmarks: 10079,41843,59138,107488,119488
+EditorDistanceSpacing: 0.899999976158142
+
+[Metadata]
+Title:Optical Cellophane
+Artist:Sound Holic
+Creator:PandaCath
+Version:KIRBY Mix
+Source:
+Tags:IOSYS Nitori Kawashiro Mountain Faith Touhou Optical Cellophane
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:5
+OverallDifficulty:7
+SliderMultiplier:1.6
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+1,-400,"aa28e2ab307f5611108875df6806343f.avi"
+0,0,"1030449-nitori_super.jpg"
+//Break Periods
+2,34114,41661
+2,53702,58250
+2,70643,75367
+2,104168,106597
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Failing)
+//Storyboard Layer 2 (Passing)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+11505,352.941176470588,4,1,0,81,1,0
+21210,-100,4,1,0,71,0,0
+33960,-100,4,1,0,83,0,0
+110205,-100,4,1,0,81,0,0
+110557,-100,4,2,0,81,0,0
+110909,-100,4,1,0,81,0,0
+111261,-100,4,2,0,81,0,0
+111613,-100,4,1,0,81,0,0
+111965,-100,4,2,0,81,0,0
+112317,-100,4,1,0,81,0,0
+112669,-100,4,2,0,81,0,0
+113021,-100,4,2,0,81,0,0
+117256,-100,4,1,0,81,0,0
+118756,-100,4,1,0,81,0,1
+129961,-100,4,1,0,81,0,0
+
+[Colours]
+Combo1 : 168,255,168
+Combo2 : 0,179,0
+Combo3 : 55,145,234
+Combo4 : 40,255,40
+
 [HitObjects]
 566,474,1228
 209,265,1246

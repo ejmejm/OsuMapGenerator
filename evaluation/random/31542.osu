@@ -1,3 +1,72 @@
+osu file format v14
+
+[General]
+AudioFilename: 6971.mp3
+AudioLeadIn: 2000
+PreviewTime: 49975
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1.6
+
+[Metadata]
+Title:Koi wa a la Mode
+TitleUnicode:恋はア・ラ・モード
+Artist:Tokyo Mew Mew
+ArtistUnicode:東京ミュウミュウ
+Creator:-Nya-
+Version:Hard
+Source:東京ミュウミュウ
+Tags:Tokyo Myu mew ending Ichigo momomiya mint aizawa Lettuce Midorikawa Pudding Fong Zakuro Fujiwara Yumi Kakazu Kumi Sakuma Hisayo Mochizuki Junko Noda
+BeatmapID:554080
+BeatmapSetID:239679
+
+[Difficulty]
+HPDrainRate:6
+CircleSize:4
+OverallDifficulty:6
+ApproachRate:7
+SliderMultiplier:1.5
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"Mew.jpg",0,0
+Video,445,"Ending.avi"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+475,375,6,2,2,40,1,0
+2725,375,4,2,2,40,1,0
+5725,375,4,2,2,40,1,0
+49225,-100,4,2,2,25,0,0
+49975,375,4,2,2,60,1,1
+61975,-100,4,2,2,60,0,0
+67225,-100,4,2,2,60,0,1
+79225,-100,4,2,2,60,0,0
+
+
+[Colours]
+Combo1 : 187,119,255
+Combo2 : 255,140,255
+Combo3 : 53,154,255
+Combo4 : 130,255,130
+Combo5 : 255,255,132
+SliderBorder : 255,255,255
+
 [HitObjects]
 116,297,5884
 130,412,6002

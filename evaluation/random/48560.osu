@@ -1,3 +1,70 @@
+osu file format v14
+
+[General]
+AudioFilename: 10676.mp3
+AudioLeadIn: 0
+PreviewTime: 1247
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1.4
+
+[Metadata]
+Title:MeniMeni ManiMani (TV Version)
+TitleUnicode:メニメニマニマニ（TVバージョン）
+Artist:Takamiya Nasuno (CV:Narumi Kyoko)
+ArtistUnicode:高宮なすの（CV:鳴海杏子）
+Creator:Underforest
+Version:Normal
+Source:てーきゅう
+Tags:teekyuu 2 opening tv size pop'n music ラピストリア lapistoria
+BeatmapID:1076345
+BeatmapSetID:506003
+
+[Difficulty]
+HPDrainRate:4
+CircleSize:3.5
+OverallDifficulty:4
+ApproachRate:5
+SliderMultiplier:1.2
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bg.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+-4985,389.61038961039,4,2,2,70,1,0
+1248,-100,4,2,1,70,0,1
+1346,-100,4,2,1,70,0,0
+13716,-100,4,2,1,70,0,1
+13813,-100,4,2,1,70,0,0
+26183,-100,4,2,1,70,0,1
+26281,-100,4,2,1,70,0,0
+30274,-100,4,2,1,50,0,0
+30469,-100,4,2,1,30,0,0
+30664,-100,4,2,1,5,0,0
+
+
+[Colours]
+Combo1 : 225,5,250
+Combo2 : 226,193,5
+Combo3 : 0,128,64
+
 [HitObjects]
 488,160,2717
 246,210,3397

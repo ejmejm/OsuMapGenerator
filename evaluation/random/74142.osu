@@ -1,3 +1,77 @@
+osu file format v14
+
+[General]
+AudioFilename: 15538.mp3
+AudioLeadIn: 0
+PreviewTime: 90795
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.6
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+Bookmarks: 16855,26963,48159,58594,68703,79137,113050
+DistanceSpacing: 1.5
+BeatDivisor: 4
+GridSize: 32
+TimelineZoom: 2.2
+
+[Metadata]
+Title:Ashita e no Kiseki -Opening Size-
+TitleUnicode:明日への軌跡 -Opening Size-
+Artist:Falcom Sound Team jdk feat. Sazaka Megumi
+ArtistUnicode:Falcom Sound Team jdk feat. 佐坂めぐみ
+Creator:Bellicose
+Version:Hard
+Source:英雄伝説 閃の軌跡IV –THE END OF SAGA-
+Tags:the legend of heroes trails of cold steel Eiyuu Densetsu Sen no Kiseki Four 4 video game ost soundtrack opening japanese jrock
+BeatmapID:2091025
+BeatmapSetID:999739
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:3.5
+OverallDifficulty:6.5
+ApproachRate:8
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bg.jpg",0,0
+Video,920,"video.mp4"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+877,326.086956521739,4,2,1,50,1,0
+26311,-100,4,2,1,60,0,0
+48159,-100,4,2,1,50,0,0
+66094,-100,4,2,1,55,0,0
+79137,-100,4,2,1,50,0,0
+86963,-100,4,2,1,55,0,0
+92181,-95.2380952380952,4,2,1,65,0,1
+101311,-95.2380952380952,4,2,1,65,0,0
+102453,-95.2380952380952,4,2,1,65,0,1
+112724,-100,4,2,1,65,0,0
+113050,-100,4,2,1,50,0,0
+123485,-100,4,2,1,53,0,0
+131311,-181.818181818182,4,2,1,50,0,0
+132616,-100,4,2,1,65,0,0
+132942,-100,4,2,1,60,0,0
+133920,-100,4,2,1,50,0,0
+
+
+[Colours]
+Combo1 : 96,175,255
+Combo2 : 201,201,201
+
 [HitObjects]
 326,364,4970
 551,401,5431

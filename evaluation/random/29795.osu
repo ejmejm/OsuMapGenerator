@@ -1,3 +1,65 @@
+osu file format v14
+
+[General]
+AudioFilename: 6546.mp3
+AudioLeadIn: 1500
+PreviewTime: 59611
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.5
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1
+
+[Metadata]
+Title:BLACK ROCK SHOOTER
+TitleUnicode:ブラック★ロックシューター
+Artist:supercell feat. Hatsune Miku
+ArtistUnicode:supercell feat. 初音ミク
+Creator:-Nya-
+Version:Normal
+Source:ブラック★ロックシューター
+Tags:opening Burakku Rokku Shuta Vocaloid Vocaloid2 tv_size milan- Avishay ryo
+BeatmapID:510440
+BeatmapSetID:217628
+
+[Difficulty]
+HPDrainRate:3.5
+CircleSize:3
+OverallDifficulty:4
+ApproachRate:5
+SliderMultiplier:1.1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+Video,1444,"Black Rock Shooter.avi"
+0,0,"BRS.png",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+1430,363.636363636364,4,2,1,70,1,0
+59611,-100,4,2,1,70,0,1
+88702,-100,4,2,1,70,0,0
+
+
+[Colours]
+Combo1 : 111,255,255
+Combo2 : 0,125,251
+Combo3 : 131,131,131
+Combo4 : 132,132,255
+
 [HitObjects]
 565,150,3052
 402,198,3154

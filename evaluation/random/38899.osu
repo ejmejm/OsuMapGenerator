@@ -1,3 +1,72 @@
+osu file format v14
+
+[General]
+AudioFilename: 8650.mp3
+AudioLeadIn: 0
+PreviewTime: 39668
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 1.2
+BeatDivisor: 4
+GridSize: 8
+TimelineZoom: 1
+
+[Metadata]
+Title:Sewing Machine
+TitleUnicode:Sewing Machine
+Artist:yak_won
+ArtistUnicode:yak_won
+Creator:ktgster
+Version:Hard
+Source:EZ2DJ AEIC
+Tags:ORIGINAL SOUND TRACK : 4CD ~Spiral~ SQUARE PIXELS
+BeatmapID:773905
+BeatmapSetID:350295
+
+[Difficulty]
+HPDrainRate:4.5
+CircleSize:4.2
+OverallDifficulty:6
+ApproachRate:7
+SliderMultiplier:1.5
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"A BG.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+1268,400,4,2,1,80,1,0
+7668,-100,4,2,1,60,0,0
+20468,-100,4,2,1,80,0,0
+39668,-100,4,2,1,90,0,1
+52268,-100,4,2,1,90,0,0
+52468,-100,4,2,1,90,0,1
+65268,-100,4,2,1,80,0,0
+78068,-100,4,2,1,90,0,1
+90868,-111.111111111111,4,2,1,70,0,0
+103668,-125,4,2,1,60,0,0
+118068,-100,4,2,1,80,0,0
+
+
+[Colours]
+Combo1 : 121,121,255
+Combo2 : 205,205,205
+Combo3 : 18,124,255
+Combo4 : 146,36,255
+
 [HitObjects]
 546,85,9060
 462,391,9716
