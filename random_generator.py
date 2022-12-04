@@ -25,6 +25,18 @@ def random_generator(save_path, file_name, end_time, gap_limitation, start_limit
             cur_time += random.randint(0, gap_limitation)
 
 
+def meta_data(read_path, save_path, file_name):
+    """
+    read_path: the root of the human generated ground truth osu files with the meta data
+    save_path: the root of the randomly generated osu files
+    file_name: the name of the osu file 
+    """
+    hitobjects_info = open(save_path + file_name, "r+", encoding=ENCODING).read()
+    meta_data = open(read_path + file_name, "r+", encoding=ENCODING).read().split("[HitObjects]\n")[0]
+    with open(save_path + file_name, "w+", encoding=ENCODING) as f:
+        f.write(meta_data + hitobjects_info)
+
+
 def song_map(mapping):
     """
     mapping: the mapping file with the relation between song files and map files
@@ -41,12 +53,13 @@ def song_map(mapping):
 
 if __name__ == '__main__':
     cur_path = os.getcwd().replace("\\", "/")
-    song_path = cur_path + "/songs/"
+    song_path = cur_path + "/evaluation/songs/"
     song_names = os.listdir(song_path)
 
-    map_dict = song_map(cur_path + "/song_mapping.csv")
+    map_dict = song_map(cur_path + "/evaluation/song_mapping.csv")
 
     for song_name in song_names:
 
         duration = librosa.get_duration(filename=song_path+song_name)
-        random_generator(os.getcwd().replace("\\", "/") + "/random/", map_dict[song_name], duration * 1000, 1000, 10000)
+        # random_generator(cur_path + "/random/", map_dict[song_name], duration * 1000, 1000, 10000)
+        meta_data(cur_path + "/evaluation/maps/", cur_path + "/evaluation/random/", map_dict[song_name])

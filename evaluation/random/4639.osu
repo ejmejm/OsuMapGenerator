@@ -1,3 +1,97 @@
+osu file format v12
+
+[General]
+AudioFilename: 1017.mp3
+AudioLeadIn: 0
+PreviewTime: 115308
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+Bookmarks: 12359,63838
+DistanceSpacing: 0.9
+BeatDivisor: 2
+GridSize: 4
+
+[Metadata]
+Title:Crazy nighT
+TitleUnicode:Crazy∞nighT
+Artist:HitoshizukuP x Yama
+ArtistUnicode:ひとしずくＰ × やま△
+Creator:Sephibro
+Version:Rakuen's Normal
+Source:
+Tags:Hatsune Miku Kagamine Rin Len Megurine Luka KAITO MEIKO GUMI Kamui Gakupo meiikyuu Rakuen Vocaloid Eight
+BeatmapID:288830
+BeatmapSetID:109401
+
+[Difficulty]
+HPDrainRate:4
+CircleSize:3
+OverallDifficulty:4
+ApproachRate:5
+SliderMultiplier:1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bg.jpg",0,0
+//Break Periods
+2,50214,55873
+2,78250,81756
+2,106485,112344
+2,134720,140456
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+2956,294.117647058824,4,2,0,100,1,0
+12367,-100,4,2,0,90,0,0
+12514,-100,4,2,0,90,0,0
+30897,-100,4,2,0,75,0,0
+31191,-100,4,2,0,60,0,0
+57073,-133.333333333333,4,2,0,70,0,0
+57661,-133.333333333333,4,2,0,80,0,0
+58250,-133.333333333333,4,2,0,90,0,0
+59426,-100,4,2,0,100,0,1
+77661,-100,4,2,0,100,0,0
+78250,-100,4,2,0,60,0,0
+85897,-100,4,2,0,60,0,0
+86779,-100,4,2,0,60,0,0
+87367,-100,4,2,0,60,0,0
+113544,-133.333333333333,4,2,0,70,0,0
+114132,-133.333333333333,4,2,0,80,0,0
+114720,-133.333333333333,4,2,0,90,0,0
+115897,-100,4,2,0,100,0,1
+134132,-100,4,2,0,100,0,0
+141779,-100,4,2,0,100,0,0
+144132,-133.333333333333,4,2,0,60,0,0
+151485,-133.333333333333,4,2,0,60,0,0
+152220,-133.333333333333,4,2,0,60,0,0
+153544,-166.666666666667,4,2,0,40,0,0
+154720,-100,4,2,0,100,0,1
+173544,-100,4,2,0,100,0,0
+173838,-100,4,2,0,100,0,1
+197956,-100,4,2,0,100,0,1
+198838,-100,4,2,0,100,0,1
+199132,-100,4,2,0,100,0,0
+
+
+[Colours]
+Combo1 : 47,47,255
+Combo2 : 141,28,255
+Combo3 : 0,172,172
+Combo4 : 226,78,119
+
 [HitObjects]
 171,352,6568
 420,371,7006

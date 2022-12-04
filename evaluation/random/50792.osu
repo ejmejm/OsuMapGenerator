@@ -1,3 +1,62 @@
+osu file format v9
+
+[General]
+AudioFilename: 11118.mp3
+AudioLeadIn: 1522
+PreviewTime: 77178
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+
+[Editor]
+DistanceSpacing: 1.1
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:Garasu no Sora
+Artist:Koshimizu Ami
+Creator:Nymph
+Version:Normal
+Source:
+Tags:RL.MADteam C74 To The Crystal Sky Raindrop Lazurite
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:3
+OverallDifficulty:3
+ApproachRate:5
+SliderMultiplier:1.2
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+Video,0,"321.avi"
+0,0,"321.jpg"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+987,476.190476190476,4,2,1,35,1,0
+77177,-100,4,2,1,35,0,1
+107653,-100,4,2,1,35,0,0
+138129,-100,4,2,1,15,0,0
+
+
+[Colours]
+Combo1 : 186,117,255
+Combo2 : 53,154,255
+Combo3 : 255,172,255
+Combo4 : 164,255,164
+
 [HitObjects]
 391,332,6506
 244,316,6637

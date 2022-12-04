@@ -1,3 +1,280 @@
+osu file format v6
+
+[General]
+AudioFilename: 191.mp3
+AudioLeadIn: 2526
+PreviewTime: 98255
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+Bookmarks: 148965
+DistanceSpacing: 1.29999995231628
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:EMOTION
+Artist:Tanaka Rie
+Creator:quintitem
+Version:CC's Difficulty
+Source:Mobile Suit Gundam Seed Destiny
+Tags:Anime ccbp
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:4
+OverallDifficulty:7
+SliderMultiplier:1.8
+SliderTickRate:0.5
+
+[Events]
+//Background and Video events
+0,0,"Lacus3.jpg"
+//Break Periods
+2,82971,89226
+2,90326,95806
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+Sprite,Foreground,Centre,"StoryBoard\2.png",320,240
+ M,0,22384,,551,418
+ F,0,22384,22577,0,1
+ F,0,22577,25287,1
+ F,0,25287,25481,1,0
+Sprite,Foreground,Centre,"StoryBoard\1.png",320,240
+ M,0,19287,,386,421
+ F,0,19287,19481,0,1
+ F,0,19481,25287,1
+ F,0,25287,25481,1,0
+Sprite,Foreground,Centre,"StoryBoard\4.png",320,240
+ M,0,29932,,580,417
+ F,0,29932,30126,0,1
+ F,0,30126,31287,1
+ F,0,31287,31481,1,0
+Sprite,Foreground,Centre,"StoryBoard\3.png",320,240
+ M,0,25868,,430,420
+ F,0,25868,26061,0,1
+ F,0,26061,31287,1
+ F,0,31287,31481,1,0
+Sprite,Foreground,Centre,"StoryBoard\6.png",320,240
+ M,0,34771,,564,420
+ F,0,34771,34965,0,1
+ F,0,34965,37674,1
+ F,0,37674,37868,1,0
+Sprite,Foreground,Centre,"StoryBoard\5.png",320,240
+ M,0,31674,,396,418
+ F,0,31674,31868,0,1
+ F,0,31868,37674,1
+ F,0,37674,37868,1,0
+Sprite,Foreground,Centre,"StoryBoard\7.png",320,240
+ M,0,38255,,448,420
+ F,0,38255,38448,0,1
+ F,0,38448,43868,1
+ F,0,43868,44061,1,0
+Sprite,Foreground,Centre,"StoryBoard\8.png",320,240
+ M,0,44448,,493,420
+ F,0,44448,44642,0,1
+ F,0,44642,49287,1
+ F,0,49287,49481,1,0
+Sprite,Foreground,Centre,"StoryBoard\9.png",320,240
+ M,0,49674,,522,420
+ F,0,49674,49868,0,1
+ F,0,49868,55868,1
+ F,0,55868,56061,1,0
+Sprite,Foreground,Centre,"StoryBoard\12.png",320,240
+ M,0,62255,,593,420
+ F,0,62255,62448,0,1
+ F,0,62448,64771,1
+ F,0,64771,64965,1,0
+Sprite,Foreground,Centre,"StoryBoard\11.png",320,240
+ M,0,58577,,413,422
+ F,0,58577,58771,0,1
+ F,0,58771,64771,1
+ F,0,64771,64965,1,0
+Sprite,Foreground,Centre,"StoryBoard\13.png",320,240
+ M,0,65352,,468,421
+ F,0,65352,65545,0,1
+ F,0,65545,70577,1
+ F,0,70577,70771,1,0
+Sprite,Foreground,Centre,"StoryBoard\15.png",320,240
+ M,0,74642,,571,420
+ F,0,74642,74836,0,1
+ F,0,74836,77158,1
+ F,0,77158,77352,1,0
+Sprite,Foreground,Centre,"StoryBoard\14.png",320,240
+ M,0,70965,,343,421
+ F,0,70965,71158,0,1
+ F,0,71158,77158,1
+ F,0,77158,77352,1,0
+Sprite,Foreground,Centre,"StoryBoard\16.png",320,240
+ M,0,77739,,449,420
+ F,0,77739,77932,0,1
+ F,0,77932,84126,1
+ F,0,84126,84319,1,0
+Sprite,Foreground,Centre,"StoryBoard\Title2.png",320,240
+ M,0,90126,90222,340,450,340,377
+ F,0,90126,90319,0,1
+ M,0,95545,96319,340,377,340,450
+ F,0,95545,96319,1,0
+Sprite,Foreground,Centre,"StoryBoard\22.png",320,240
+ M,0,99803,,531,420
+ F,0,99803,99997,0,1
+ F,0,99997,102706,1
+ F,0,102706,102900,1,0
+Sprite,Foreground,Centre,"StoryBoard\21.png",320,240
+ M,0,96706,,363,422
+ F,0,96706,96900,0,1
+ F,0,96900,102706,1
+ F,0,102706,102900,1,0
+Sprite,Foreground,Centre,"StoryBoard\24.png",320,240
+ M,0,107352,,569,420
+ F,0,107352,107545,0,1
+ F,0,107545,108513,1
+ F,0,108513,108706,1,0
+Sprite,Foreground,Centre,"StoryBoard\23.png",320,240
+ M,0,103287,,371,417
+ F,0,103287,103481,0,1
+ F,0,103481,108513,1
+ F,0,108513,108706,1,0
+Sprite,Foreground,Centre,"StoryBoard\26.png",320,240
+ M,0,112190,,562,418
+ F,0,112190,112384,0,1
+ F,0,112384,115094,1
+ F,0,115094,115287,1,0
+Sprite,Foreground,Centre,"StoryBoard\25.png",320,240
+ M,0,109094,,397,418
+ F,0,109094,109287,0,1
+ F,0,109287,115094,1
+ F,0,115094,115287,1,0
+Sprite,Foreground,Centre,"StoryBoard\27.png",320,240
+ M,0,115674,,493,420
+ F,0,115674,115868,0,1
+ F,0,115868,120900,1
+ F,0,120900,121094,1,0
+Sprite,Foreground,Centre,"StoryBoard\28.png",320,240
+ M,0,121868,,498,420
+ F,0,121868,122061,0,1
+ F,0,122061,126706,1
+ F,0,126706,126900,1,0
+Sprite,Foreground,Centre,"StoryBoard\29.png",320,240
+ M,0,127094,,503,420
+ F,0,127094,127287,0,1
+ F,0,127287,133674,1
+ F,0,133674,133868,1,0
+Sprite,Foreground,Centre,"StoryBoard\32.png",320,240
+ M,0,139674,,570,420
+ F,0,139674,139868,0,1
+ F,0,139868,142190,1
+ F,0,142190,142384,1,0
+Sprite,Foreground,Centre,"StoryBoard\31.png",320,240
+ M,0,135997,,347,422
+ F,0,135997,136190,0,1
+ F,0,136190,142190,1
+ F,0,142190,142384,1,0
+Sprite,Foreground,Centre,"StoryBoard\33.png",320,240
+ M,0,142771,,474,421
+ F,0,142771,142965,0,1
+ F,0,142965,148771,1
+ F,0,148771,148965,1,0
+Sprite,Foreground,Centre,"StoryBoard\42.png",320,240
+ M,0,170642,,559,417
+ F,0,170642,170836,0,1
+ F,0,170836,173158,1
+ F,0,173158,173352,1,0
+Sprite,Foreground,Centre,"StoryBoard\41.png",320,240
+ M,0,166965,,323,418
+ F,0,166965,167158,0,1
+ F,0,167158,173158,1
+ F,0,173158,173352,1,0
+Sprite,Foreground,Centre,"StoryBoard\43.png",320,240
+ M,0,173739,,454,420
+ F,0,173739,173932,0,1
+ F,0,173932,178965,1
+ F,0,178965,179158,1,0
+Sprite,Foreground,Centre,"StoryBoard\45.png",320,240
+ M,0,183029,,578,421
+ F,0,183029,183223,0,1
+ F,0,183223,185545,1
+ F,0,185545,185739,1,0
+Sprite,Foreground,Centre,"StoryBoard\44.png",320,240
+ M,0,179352,,365,424
+ F,0,179352,179545,0,1
+ F,0,179545,185545,1
+ F,0,185545,185739,1,0
+Sprite,Foreground,Centre,"StoryBoard\46.png",320,240
+ M,0,186126,,463,420
+ F,0,186126,186319,0,1
+ F,0,186319,191352,1
+ F,0,191352,191545,1,0
+Sprite,Foreground,Centre,"StoryBoard\12.png",320,240
+ M,0,195416,,592,420
+ F,0,195416,195610,0,1
+ F,0,195610,197932,1
+ F,0,197932,198126,1,0
+Sprite,Foreground,Centre,"StoryBoard\11.png",320,240
+ M,0,191739,,414,422
+ F,0,191739,191932,0,1
+ F,0,191932,197932,1
+ F,0,197932,198126,1,0
+Sprite,Foreground,Centre,"StoryBoard\13.png",320,240
+ M,0,198513,,464,420
+ F,0,198513,198706,0,1
+ F,0,198706,203739,1
+ F,0,203739,203932,1,0
+Sprite,Foreground,Centre,"StoryBoard\15.png",320,240
+ M,0,207803,,567,420
+ F,0,207803,207997,0,1
+ F,0,207997,210319,1
+ F,0,210319,210513,1,0
+Sprite,Foreground,Centre,"StoryBoard\14.png",320,240
+ M,0,204126,,338,421
+ F,0,204126,204319,0,1
+ F,0,204319,210319,1
+ F,0,210319,210513,1,0
+Sprite,Foreground,Centre,"StoryBoard\16.png",320,240
+ M,0,210900,,446,421
+ F,0,210900,211094,0,1
+ F,0,211094,217287,1
+ F,0,217287,217481,1,0
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+707,387.096774193548,4,2,0,70,1,0
+53255,-200,4,2,0,70,0,0
+54513,1548.38709677419,4,2,0,70,1,0
+56061,387.096774193548,4,2,0,70,1,0
+76577,1548.38709677419,4,2,0,70,1,0
+77352,387.096774193548,4,2,0,70,1,0
+130671,-200,4,2,0,70,0,0
+131932,1548.38709677419,4,2,0,70,1,0
+133481,387.096774193548,4,2,0,70,1,0
+148668,-200,4,2,0,60,0,0
+163958,-100,4,2,0,70,0,0
+172378,-200,4,2,0,70,0,0
+173539,-100,4,2,0,70,0,0
+184765,-200,4,2,0,70,0,0
+185926,-100,4,2,0,70,0,0
+197152,-200,4,2,0,69,0,0
+198308,-100,4,2,0,70,0,0
+209739,1548.38709677419,4,2,0,70,1,0
+210513,387.096774193548,4,2,0,70,1,0
+215730,-200,4,2,0,70,0,0
+217279,-100,4,2,0,70,0,0
+234117,-100,4,2,0,0,0,0
+
+[Colours]
+Combo1 : 254,170,56
+Combo2 : 217,74,99
+Combo3 : 251,231,53
+Combo4 : 231,60,255
+
 [HitObjects]
 419,356,7427
 123,161,7447

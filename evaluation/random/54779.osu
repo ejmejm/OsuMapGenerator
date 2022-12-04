@@ -1,3 +1,56 @@
+osu file format v5
+
+[General]
+AudioFilename: 11916.mp3
+AudioLeadIn: 0
+PreviewTime: -1
+Countdown: 1
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+EditorDistanceSpacing: 0.800000011920929
+
+[Metadata]
+Title:Realize
+Artist:Tamaki Nami
+Creator:deepsea
+Version:Genesis
+Source:
+Tags:
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:5
+OverallDifficulty:7
+SliderMultiplier:2.1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"gundam_seed_destiny_02_0960.sized.jpg"
+//Break Periods
+2,33260,34583
+2,60130,62774
+2,104210,119194
+2,157526,161494
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+219,440.690414983474,4,1,0,100,1,0
+
+[Colours]
+Combo1 : 255,255,0
+Combo2 : 0,255,64
+Combo3 : 255,128,0
+Combo4 : 240,5,5
+
 [HitObjects]
 237,345,3901
 253,223,4052

@@ -1,3 +1,71 @@
+osu file format v5
+
+[General]
+AudioFilename: 13757.mp3
+AudioLeadIn: 1996
+PreviewTime: -1
+Countdown: 0
+SampleSet: Normal
+StackLeniency: 0.3
+Mode: 0
+LetterboxInBreaks: 1
+EditorDistanceSpacing: 1.39999997615814
+
+[Metadata]
+Title:Kumo no Iseki
+Artist:Kagamine Ren
+Creator:v2b
+Version:Hard
+Source:
+Tags:Vocaloid
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:5
+OverallDifficulty:6
+SliderMultiplier:2
+SliderTickRate:0.5
+
+[Events]
+//Background and Video events
+0,0,"000771_18.jpg"
+//Break Periods
+2,107641,119725
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,206,67,0
+
+[TimingPoints]
+775,555.555555555556,4,1,0,60,1,0
+12302,-200,4,1,0,60,0,0
+13552,-100,4,1,0,60,0,0
+32372,-100,4,2,0,60,0,0
+34038,-100,4,1,0,60,0,0
+38691,-100,4,2,0,60,0,0
+40358,-100,4,1,0,60,0,0
+45705,-100,4,2,0,60,0,0
+47372,-100,4,1,0,60,0,0
+53969,-200,4,2,0,60,0,0
+67297,-100,4,2,0,60,0,0
+78969,-100,4,1,0,60,0,0
+79663,-100,4,2,0,30,0,0
+80775,-100,4,1,0,60,0,0
+105636,-200,4,1,0,60,0,0
+107441,-100,4,1,0,60,0,0
+147441,-200,4,2,0,60,0,0
+168136,-100,4,2,0,60,0,0
+174038,-100,4,1,0,60,0,0
+
+[Colours]
+Combo1 : 255,150,0
+Combo2 : 247,247,0
+Combo3 : 128,64,0
+Combo4 : 240,5,5
+
 [HitObjects]
 457,273,6529
 162,298,6555

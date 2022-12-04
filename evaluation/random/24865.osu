@@ -1,3 +1,96 @@
+osu file format v14
+
+[General]
+AudioFilename: 5386.mp3
+AudioLeadIn: 1000
+PreviewTime:52995
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 32
+TimelineZoom: 1.8
+
+[Metadata]
+Title:Kyoukai no Kanata (TV Size)
+TitleUnicode:境界の彼方 (TV Size)
+Artist:Chihara Minori
+ArtistUnicode:茅原実里
+Creator:Sotarks
+Version:Akitoshi's Normal
+Source:Kyoukai no Kanata
+Tags:op opening beyond the boundary japanese anime female vocals vocalist jpop j-pop j pop kawaiwkyik rizia karia lolia akitoshi corinn -laura- shizuku- kazato asa shikibe mayu kibbleru appleeaterx mint air kowari 畑亜貴 Aki Hata 菊田大介 (Elements Garden) Daisuke Kikuta 境界の彼方
+BeatmapID:3399119
+BeatmapSetID:1664358
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:3.2
+OverallDifficulty:4
+ApproachRate:5
+SliderMultiplier:1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bg.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+-212,326.086956521739,4,2,0,42,1,0
+143,-100,4,2,0,42,0,0
+1092,-111.111111111111,4,2,0,42,0,0
+8889,326.086956521739,4,2,0,42,1,0
+8889,-111.111111111111,4,2,0,42,0,0
+11497,-100,4,2,0,52,0,0
+14105,-100,4,2,0,52,0,0
+14907,-100,4,2,0,32,0,0
+15227,-100,4,2,0,42,0,0
+15410,315.457413249211,4,2,0,52,1,0
+15869,-100,4,2,0,62,0,0
+16190,-100,4,2,0,52,0,0
+16671,333.333333333333,4,2,0,62,1,0
+16671,-100,4,2,0,62,0,0
+19327,326.086956521739,4,2,0,52,1,0
+19327,-100,4,2,0,52,0,0
+20305,-100,4,2,0,62,0,0
+21935,-100,4,2,0,72,0,0
+27153,-111.111111111111,4,2,0,52,0,0
+37587,-100,4,2,0,62,0,0
+38892,-100,4,2,0,62,0,0
+40196,-100,4,2,0,62,0,0
+41500,-100,4,2,0,62,0,0
+42805,-100,4,2,0,62,0,0
+44109,-100,4,2,0,62,0,0
+48022,-100,4,2,0,62,0,0
+53240,-90.9090909090909,4,2,0,72,0,1
+79326,-111.111111111111,4,2,0,52,0,0
+82634,357.142857142857,4,2,0,42,1,0
+82634,-111.111111111111,4,2,0,42,0,0
+83467,555.555555555556,4,2,0,32,1,0
+83467,-83.3333333333333,4,2,0,32,0,0
+84717,-83.3333333333333,4,2,0,5,0,0
+87911,-83.3333333333333,4,2,0,5,0,0
+
+
+[Colours]
+Combo1 : 255,151,237
+Combo2 : 151,237,255
+Combo3 : 0,96,255
+Combo4 : 237,17,255
+
 [HitObjects]
 630,20,6157
 275,442,6178

@@ -1,3 +1,76 @@
+osu file format v6
+
+[General]
+AudioFilename: 7727.mp3
+AudioLeadIn: 518
+PreviewTime: 86900
+Countdown: 2
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+DistanceSpacing: 1
+BeatDivisor: 3
+GridSize: 8
+
+[Metadata]
+Title:Starlight
+Artist:Muse
+Creator:eee
+Version:Hard
+Source:
+Tags:
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:5
+OverallDifficulty:6
+SliderMultiplier:2
+SliderTickRate:2
+
+[Events]
+//Background and Video events
+0,0,"Shooting_Stars.jpg"
+//Break Periods
+2,55502,69313
+2,102809,118341
+2,134400,141049
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+1504,491.803278688525,4,1,0,34,1,0
+7897,493.802775171596,4,1,0,45,1,0
+86900,492.206726825267,4,1,0,66,1,0
+102607,987.30655737705,4,2,0,71,1,0
+130130,-100,4,1,0,30,0,0
+131117,-100,4,1,0,40,0,0
+131857,-100,4,1,0,60,0,0
+132598,-100,4,1,0,70,0,0
+133338,-100,4,1,0,80,0,0
+142000,-50,4,1,0,63,0,0
+157744,-50,4,1,0,71,0,0
+173522,-100,4,1,0,66,0,0
+173689,490.998363338789,4,1,0,69,1,0
+189394,489.597160493824,4,1,0,59,1,1
+204947,-100,4,1,0,60,0,0
+205019,-100,4,1,0,84,0,1
+220634,-100,4,2,0,71,0,0
+236289,-100,4,2,0,40,0,0
+238737,-100,4,2,0,21,0,0
+
+[Colours]
+Combo1 : 255,255,255
+Combo2 : 91,169,185
+Combo3 : 77,240,240
+
 [HitObjects]
 428,280,8986
 574,7,9398

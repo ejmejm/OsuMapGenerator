@@ -1,3 +1,77 @@
+osu file format v9
+
+[General]
+AudioFilename: 7713.mp3
+AudioLeadIn: 0
+PreviewTime: 74031
+Countdown: 0
+SampleSet: Normal
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+DistanceSpacing: 0.8
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:Streamline Prism
+Artist:Kagamine Rin & Len
+Creator:banvi
+Version:Normal
+Source:GIGA-P
+Tags:Vocaloid Vocaloid2
+
+[Difficulty]
+HPDrainRate:4
+CircleSize:3
+OverallDifficulty:3
+ApproachRate:3
+SliderMultiplier:1
+SliderTickRate:2
+
+[Events]
+//Background and Video events
+0,0,"bg.jpg"
+//Break Periods
+2,22732,28256
+2,106911,116017
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+1040,447.761194029851,4,1,0,70,1,0
+40788,-100,4,1,2,70,0,0
+41012,-100,4,1,0,70,0,0
+42579,-100,4,1,2,70,0,0
+42803,-100,4,1,0,70,0,0
+74472,-100,4,1,0,70,0,1
+83773,-100,4,1,2,70,0,1
+83997,-100,4,1,0,70,0,1
+106711,-100,4,1,0,70,0,0
+128550,-100,4,1,2,70,0,0
+128773,-100,4,1,0,70,0,0
+129445,-100,4,1,2,70,0,0
+129665,-100,4,1,0,70,0,0
+162234,-100,4,1,0,70,0,1
+173326,-100,4,1,2,70,0,1
+173550,-100,4,1,0,70,0,1
+174221,-100,4,1,2,70,0,1
+174445,-100,4,1,0,70,0,1
+190890,-100,4,1,0,70,0,0
+
+[Colours]
+Combo1 : 255,128,0
+Combo2 : 248,49,14
+Combo3 : 242,214,49
+Combo4 : 164,82,0
+
 [HitObjects]
 354,46,3035
 529,208,3998

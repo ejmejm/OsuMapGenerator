@@ -1,3 +1,86 @@
+osu file format v14
+
+[General]
+AudioFilename: 14668.mp3
+AudioLeadIn: 0
+PreviewTime: 27832
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.4
+Mode: 0
+LetterboxInBreaks: 0
+EpilepsyWarning: 1
+WidescreenStoryboard: 1
+
+[Editor]
+DistanceSpacing: 1.2
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1
+
+[Metadata]
+Title:January Rain
+TitleUnicode:January Rain
+Artist:July
+ArtistUnicode:줄라이
+Creator:Shiranai
+Version:Normal
+Source:
+Tags:Mako Sakata piano hip hop 이동훈 digitalrecord 디지탈레코드 new age mellow galau mocha mocha708 violin instrumental
+BeatmapID:1889943
+BeatmapSetID:905485
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:3.5
+OverallDifficulty:5
+ApproachRate:5
+SliderMultiplier:1.3
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"One.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+637,612.244897959184,4,2,1,50,1,0
+2167,600,4,2,1,50,1,0
+3067,612.244897959184,4,2,1,50,1,0
+4291,631.578947368421,4,2,1,50,1,0
+4922,652.173913043478,4,2,1,50,1,0
+5572,612.244897959184,4,2,1,50,1,0
+6796,631.578947368421,4,2,1,50,1,0
+7743,612.244897959184,4,2,1,50,1,0
+8049,652.173913043478,4,2,1,50,1,0
+10005,681.818181818182,4,2,1,50,1,0
+10345,612.244897959184,4,2,1,50,1,0
+10678,612.244897959184,4,2,1,50,1,0
+17412,625,4,2,1,50,1,0
+18037,612.244897959184,4,2,1,50,1,0
+69465,-90.9090909090909,4,2,1,60,0,1
+86608,-90.9090909090909,4,2,1,60,0,0
+89057,-90.9090909090909,4,2,1,60,0,1
+106200,-90.9090909090909,4,2,1,60,0,0
+112934,-100,4,2,1,50,0,0
+114159,625,4,2,1,50,1,0
+115721,612.244897959184,4,2,1,50,1,0
+117251,-100,4,2,1,25,0,0
+
+
+[Colours]
+Combo1 : 125,225,255
+Combo2 : 125,255,225
+Combo3 : 255,125,225
+Combo4 : 225,125,255
+Combo5 : 225,255,125
+Combo6 : 255,225,125
+
 [HitObjects]
 52,233,6211
 213,324,7046

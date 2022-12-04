@@ -1,3 +1,98 @@
+osu file format v12
+
+[General]
+AudioFilename: 5051.mp3
+AudioLeadIn: 1000
+PreviewTime: 71195
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 0.8
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 2.1
+
+[Metadata]
+Title:Daydream cafe (TV Size)
+TitleUnicode:Daydream café (TV Size)
+Artist:Petit Rabbit's
+ArtistUnicode:Petit Rabbit's
+Creator:alacat
+Version:Insane
+Source:ご注文はうさぎですか？
+Tags:manga time kirara MAX Gochuumon wa Usagi desuka? Gochiusa Fycho Rare opening Is the order a rabbit? hoto cocoa sakura ayane kafuu chino minase inori tedeza rize taneda risa ujimatsu chiya  satou satomi kirima syaro uchida maaya ごちうさ
+BeatmapID:393360
+BeatmapSetID:161102
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:4
+OverallDifficulty:7
+ApproachRate:8
+SliderMultiplier:1.8
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bgbgbg.jpg",0,0
+Video,0,"vvv.flv"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+-205,400,4,2,3,50,1,0
+1495,-100,4,2,3,60,0,0
+5595,-100,4,2,1,50,0,0
+5995,-100,4,2,3,60,0,0
+12395,-100,4,2,3,70,0,0
+12995,-100,4,2,3,80,0,0
+13595,-100,4,2,1,60,0,0
+13995,-100,4,2,2,70,0,0
+25395,-100,4,2,2,60,0,0
+26595,-100,4,2,2,50,0,0
+26895,-100,4,2,2,40,0,0
+27095,-100,4,2,2,50,0,0
+33295,-100,4,2,2,40,0,0
+33495,-100,4,2,2,50,0,0
+39695,-100,4,2,2,40,0,0
+39795,-100,4,2,2,60,0,0
+52395,-100,4,2,2,65,0,0
+53995,-100,4,2,2,70,0,0
+55595,-100,4,2,2,75,0,0
+57195,-100,4,2,2,80,0,0
+57795,-100,4,2,2,70,0,0
+57995,-100,4,2,2,80,0,0
+58395,-100,4,2,2,70,0,0
+58595,-125,4,2,1,60,0,0
+58895,-125,4,2,1,40,0,0
+58995,-100,4,2,1,80,0,1
+59095,-100,4,2,1,70,0,0
+70595,-100,4,2,1,80,0,0
+70795,-100,4,2,1,90,0,0
+71195,-100,4,2,1,70,0,0
+71795,-100,4,2,1,80,0,1
+88395,-100,4,2,1,70,0,0
+
+
+[Colours]
+Combo1 : 255,255,155
+Combo2 : 176,255,255
+Combo3 : 255,164,164
+Combo4 : 255,188,155
+Combo5 : 166,255,166
+Combo6 : 213,0,213
+
 [HitObjects]
 401,314,5740
 53,215,6003

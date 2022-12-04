@@ -1,3 +1,61 @@
+osu file format v7
+
+[General]
+AudioFilename: 5101.mp3
+AudioLeadIn: 3000
+PreviewTime: 49591
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+Bookmarks: 1399,3706,4476,13706
+DistanceSpacing: 0.800000011920929
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:DAYBREAK'S BELL (TV Size)
+Artist:L'Arc~en~Ciel
+Creator:Soul-less
+Version:Normal
+Source:Mobile Suit Gundam 00
+Tags:lepidopodus
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:4
+OverallDifficulty:5
+SliderMultiplier:1
+SliderTickRate:0.5
+
+[Events]
+//Background and Video events
+0,0,"gundam00.jpg"
+Video,0,"Gundam 00 - Daybreak's Bell.avi"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+610,384.615384615385,4,2,0,61,1,0
+49840,-100,4,2,0,61,0,1
+73686,-100,4,2,0,61,0,0
+91186,-100,4,2,0,0,0,0
+
+[Colours]
+Combo1 : 255,128,0
+Combo2 : 0,128,0
+Combo3 : 128,0,255
+Combo4 : 0,0,160
+
 [HitObjects]
 152,456,8598
 371,474,8924

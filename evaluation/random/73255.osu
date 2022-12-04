@@ -1,3 +1,107 @@
+osu file format v14
+
+[General]
+AudioFilename: 15379.mp3
+AudioLeadIn: 0
+PreviewTime: 51771
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.4
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+Bookmarks: 3664,13240,17525,26097,34668,43240,51945,60517,69088,77525,85159,89981
+DistanceSpacing: 1.4
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1.7
+
+[Metadata]
+Title:Blood on the EDGE (TV Size)
+TitleUnicode:Blood on the EDGE (TV Size)
+Artist:KISIDA KYODAN & THE AKEBOSI ROCKETS
+ArtistUnicode:岸田教団＆THE明星ロケッツ
+Creator:-Aqua
+Version:Shizuku's Insane
+Source:ストライク・ザ・ブラッド Ⅱ
+Tags:Strike the Blood II 2 Two SutoBura 姫柊雪菜 Himeragi Yukina cute sad cutie qt best girl No 先輩 Senpai this is our fight Schneewalzer 雪霞狼 Sekkarō Sekkarou Sword Shaman 暁古城 Akatsuki Kojō Kojo Kojou vampire 4th Fourth Progenitor 後輩 Kōhai Kohai Kouhai OVA Original Video Animation OTP One True Pair Kishida Kyoudan and The Akeboshi Rockets Anime Japanese Opening Theme OP Shizuku- Yonaka- Onlybiscuit brotarks
+BeatmapID:2051048
+BeatmapSetID:979087
+
+[Difficulty]
+HPDrainRate:6
+CircleSize:4
+OverallDifficulty:8.5
+ApproachRate:9.2
+SliderMultiplier:1.6
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"akatsuki yukina.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+745,267.857142857143,4,2,1,50,1,0
+745,-100,4,2,1,50,0,0
+3959,-100,4,2,1,60,0,0
+4896,-100,4,2,1,80,0,1
+4963,-100,4,2,1,80,0,0
+9182,-100,4,2,1,80,0,1
+9249,-100,4,2,1,80,0,0
+13468,-100,4,2,1,65,0,0
+17753,-111.111111111111,4,2,1,60,0,0
+22039,-100,4,2,1,60,0,0
+22106,-100,4,2,1,70,0,0
+26727,-100,4,2,1,60,0,0
+30611,-100,4,2,1,70,0,0
+34896,-100,4,2,1,75,0,0
+43468,-142.857142857143,4,2,1,55,0,0
+47753,-100,4,2,1,70,0,0
+48155,-100,4,2,1,30,0,0
+48423,-100,4,2,1,40,0,0
+48691,-100,4,2,1,50,0,0
+48959,-100,4,2,1,60,0,0
+49227,-100,4,2,1,70,0,0
+49495,-100,4,2,1,80,0,0
+49762,-100,4,2,1,90,0,0
+50968,-100,4,2,1,65,0,0
+52039,-100,4,2,1,65,0,0
+52173,-90.9090909090909,4,2,1,95,0,1
+60678,-90.9090909090909,4,2,1,95,0,0
+60745,-90.9090909090909,4,2,1,95,0,1
+69048,-90.9090909090909,4,2,1,95,0,0
+69316,-83.3333333333333,4,2,1,95,0,1
+73602,-200,4,2,1,95,0,0
+75477,-200,4,2,1,5,0,0
+75611,-100,4,2,1,95,0,0
+77753,-100,4,2,1,80,0,1
+77820,-100,4,2,1,80,0,0
+82039,-100,4,2,1,80,0,1
+82106,-100,4,2,1,80,0,0
+84316,-100,4,2,1,95,0,1
+86325,-100,4,2,1,95,0,0
+87463,-100,4,2,1,75,0,0
+88535,-100,4,2,1,55,0,0
+89606,-100,4,2,1,35,0,0
+90678,-100,4,2,1,15,0,0
+91816,-100,4,2,1,5,0,0
+
+
+[Colours]
+Combo1 : 255,174,136
+Combo2 : 183,183,255
+Combo3 : 209,165,165
+Combo4 : 155,155,206
+
 [HitObjects]
 281,187,3978
 131,374,4439

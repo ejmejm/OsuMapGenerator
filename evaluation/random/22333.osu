@@ -1,3 +1,105 @@
+osu file format v14
+
+[General]
+AudioFilename: 4846.mp3
+AudioLeadIn: 0
+PreviewTime: 50706
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.5
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+DistanceSpacing: 1.5
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1.6
+
+[Metadata]
+Title:Congrathalations! (Cut Ver.)
+TitleUnicode:Congrathalations! (Cut Ver.)
+Artist:SmokyThrill77
+ArtistUnicode:SmokyThrill77
+Creator:Smoke
+Version:torriru's Insane
+Source:ラブライブ！ School idol project
+Tags:love live! µ's u's pewdiepie's tuber simulator roomieofficial boyinaband japanese english jrock j-rock rock rip cover t-series snow halation torriru browiec siivagunner giivasunner congratulations christmas xmas x-mas edit short version novelty bitch lasagna
+BeatmapID:3229770
+BeatmapSetID:1581689
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:3.6
+OverallDifficulty:8.2
+ApproachRate:8.8
+SliderMultiplier:1.6
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"honoka t-series.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+157,346.820809248555,4,2,1,55,1,0
+157,-166.666666666667,4,2,1,55,0,0
+850,-142.857142857143,4,2,1,55,0,0
+9867,-250,4,2,1,55,0,0
+12642,-142.857142857143,4,2,1,60,0,0
+22353,-142.857142857143,4,2,1,65,0,0
+23740,-125,4,2,1,70,0,0
+34839,-133.333333333333,4,2,1,75,0,0
+40388,-125,4,2,1,70,0,0
+48711,-111.111111111111,4,2,1,75,0,0
+51486,-105.263157894737,4,2,1,80,0,1
+62584,-125,4,2,1,70,0,0
+70821,-125,4,2,1,5,0,0
+70908,-111.111111111111,4,2,1,75,0,0
+82006,-100,4,2,1,85,0,0
+91717,-100,4,2,1,70,0,0
+93798,-100,4,2,1,68,0,0
+94145,-100,4,2,1,65,0,0
+94492,-100,4,2,1,63,0,0
+94839,-100,4,2,1,60,0,0
+95185,-100,4,2,1,57,0,0
+95532,-100,4,2,1,55,0,0
+95879,-100,4,2,1,52,0,0
+96226,-100,4,2,1,50,0,0
+96573,-100,4,2,1,47,0,0
+96920,-100,4,2,1,45,0,0
+97266,-100,4,2,1,42,0,0
+97613,-100,4,2,1,40,0,0
+97960,-100,4,2,1,37,0,0
+98307,-100,4,2,1,35,0,0
+98654,-100,4,2,1,32,0,0
+99000,-100,4,2,1,30,0,0
+99347,-100,4,2,1,27,0,0
+99694,-100,4,2,1,25,0,0
+100041,-100,4,2,1,23,0,0
+100388,-100,4,2,1,20,0,0
+100735,-100,4,2,1,18,0,0
+101081,-100,4,2,1,16,0,0
+101428,-100,4,2,1,14,0,0
+101775,-100,4,2,1,12,0,0
+102122,-100,4,2,1,10,0,0
+102469,-100,4,2,1,7,0,0
+102815,-100,4,2,1,5,0,0
+
+
+[Colours]
+Combo1 : 27,184,31
+Combo2 : 243,91,27
+Combo3 : 88,233,63
+Combo4 : 234,0,0
+
 [HitObjects]
 527,277,8277
 405,222,8287

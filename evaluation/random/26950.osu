@@ -1,3 +1,70 @@
+osu file format v12
+
+[General]
+AudioFilename: 5857.mp3
+AudioLeadIn: 0
+PreviewTime: 2415
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+DistanceSpacing: 1.1
+BeatDivisor: 8
+GridSize: 4
+TimelineZoom: 1
+
+[Metadata]
+Title:Interlude - teatime
+TitleUnicode:Interlude - teatime
+Artist:t+pazolite ft. RIZNA
+ArtistUnicode:t+pazolite ft. リズナ
+Creator:Kyubey
+Version:Hard
+Source:Touhou
+Tags:Honey I Scream 東方紅魔郷 the Embodiment of Scarlet Devil 上海紅茶館 Chinese Tea Shanghai Teahouse Hong Meiling
+BeatmapID:429759
+BeatmapSetID:178669
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:4
+OverallDifficulty:5
+ApproachRate:6
+SliderMultiplier:2.8
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"Untitled.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+2415.74775182892,1200,4,2,1,20,1,0
+51015,-100,4,2,1,18,0,0
+51615,-100,4,2,1,15,0,0
+52215,-100,4,2,1,12,0,0
+52815,-100,4,2,1,10,0,0
+54015,-100,4,2,1,8,0,0
+55215,-100,4,2,1,6,0,0
+
+
+[Colours]
+Combo1 : 208,205,94
+Combo2 : 202,79,82
+Combo3 : 136,202,142
+Combo4 : 81,147,174
+
 [HitObjects]
 430,148,9546
 296,127,10288

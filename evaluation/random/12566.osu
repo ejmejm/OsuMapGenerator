@@ -1,3 +1,80 @@
+osu file format v14
+
+[General]
+AudioFilename: 2724.mp3
+AudioLeadIn: 0
+PreviewTime: 84083
+Countdown: 0
+SampleSet: Drum
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+DistanceSpacing: 0.8
+BeatDivisor: 4
+GridSize: 32
+TimelineZoom: 1
+
+[Metadata]
+Title:IBUKI
+TitleUnicode:IBUKI
+Artist:Analog digitaL
+ArtistUnicode:Analog digitaL
+Creator:Gibune
+Version:Hard
+Source:Cytus II
+Tags:video game instrumental rock rayark Yoshikatsu Fukuhara 福原 善勝
+BeatmapID:2665311
+BeatmapSetID:1282968
+
+[Difficulty]
+HPDrainRate:4.5
+CircleSize:4
+OverallDifficulty:6
+ApproachRate:7
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"IBUKI.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Layer 4 (Overlay)
+//Storyboard Sound Samples
+
+[TimingPoints]
+714,434.782608695653,4,3,2,70,1,0
+4192,-111.111111111111,4,3,2,70,0,0
+5931,-90.9090909090909,4,3,2,80,0,0
+21583,-90.9090909090909,4,3,2,75,0,0
+35496,-111.111111111111,4,3,2,70,0,0
+49409,-111.111111111111,4,3,2,75,0,0
+56366,-100,4,3,2,80,0,0
+63322,-90.9090909090909,4,3,2,80,0,0
+70279,-111.111111111111,4,3,2,70,0,0
+77235,-90.9090909090909,4,3,2,75,0,0
+84192,-90.9090909090909,4,3,2,80,0,0
+98105,-111.111111111111,4,3,2,70,0,0
+110279,-90.9090909090909,4,3,2,75,0,0
+112018,-100,4,3,2,75,0,0
+118974,-100,4,3,2,80,0,0
+125931,-90.9090909090909,4,3,2,80,0,0
+132887,-100,4,3,2,75,0,0
+138105,-90.9090909090909,4,3,2,75,0,0
+
+
+[Colours]
+Combo1 : 129,238,243
+Combo2 : 187,245,122
+Combo3 : 244,111,91
+Combo4 : 237,80,107
+
 [HitObjects]
 268,410,3376
 406,99,4030

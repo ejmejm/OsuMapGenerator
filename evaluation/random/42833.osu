@@ -1,3 +1,54 @@
+osu file format v9
+
+[General]
+AudioFilename: 9489.mp3
+AudioLeadIn: 2500
+PreviewTime: 88230
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+Bookmarks: 84,10870,24016,45589,67499,89072,110645
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 4
+
+[Metadata]
+Title:Asu e no Tobira (Short Ver.)
+Artist:I WiSH
+Creator:terametis
+Version:Easy
+Source:
+Tags:
+
+[Difficulty]
+HPDrainRate:2
+CircleSize:3
+OverallDifficulty:2
+ApproachRate:2
+SliderMultiplier:0.8
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bgaa.jpg"
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+102,674.157303370787,4,2,1,60,1,0
+89090,-100,4,2,1,60,0,1
+110663,-100,4,2,1,60,0,0
+
 [HitObjects]
 306,423,1836
 19,270,2397

@@ -1,3 +1,84 @@
+osu file format v12
+
+[General]
+AudioFilename: 3029.mp3
+AudioLeadIn: 0
+PreviewTime: 89100
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+DistanceSpacing: 1.5
+BeatDivisor: 4
+GridSize: 4
+
+[Metadata]
+Title:Blue-Love Chime
+TitleUnicode:Blue-Love Chime
+Artist:nao
+ArtistUnicode:nao
+Creator:-Umi-
+Version:Gamu's Hard
+Source:天色＊アイルノーツ
+Tags:Amairo Islenauts eroge visual novel yuzusoft opening gamu -gamu- guy masaki gaillard shiraga airi amagiri yune shirley warwick short version
+BeatmapID:336344
+BeatmapSetID:132064
+
+[Difficulty]
+HPDrainRate:6
+CircleSize:4
+OverallDifficulty:6
+ApproachRate:7
+SliderMultiplier:1.52
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+Video,0,"Op.avi"
+0,0,"Hard.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+625,480,4,2,1,40,1,0
+8305,-100,4,2,2,70,0,0
+8425,-100,4,2,1,40,0,0
+23500,400,4,2,1,60,1,0
+36100,-100,4,2,1,70,0,0
+37100,-100,4,2,1,50,0,0
+63500,-133.333333333333,4,2,1,40,0,0
+76300,-100,4,2,1,50,0,0
+89100,-100,4,2,1,60,0,1
+101100,-100,4,2,1,50,0,1
+101500,-100,4,2,1,55,0,1
+101800,-100,4,2,1,55,0,0
+101900,-100,4,2,1,60,0,1
+112300,-100,4,2,2,60,0,1
+112400,-100,4,2,1,60,0,1
+113900,-100,4,2,1,55,0,1
+114300,-100,4,2,1,50,0,1
+114500,-100,4,2,1,45,0,1
+114700,-133.333333333333,4,2,1,40,0,0
+121100,-100,4,2,1,50,0,0
+
+
+[Colours]
+Combo1 : 156,87,213
+Combo2 : 60,156,236
+Combo3 : 255,159,15
+Combo4 : 104,223,32
+Combo5 : 236,209,23
+
 [HitObjects]
 469,92,2562
 622,96,2595

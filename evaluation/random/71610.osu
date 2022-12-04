@@ -1,3 +1,83 @@
+osu file format v14
+
+[General]
+AudioFilename: 15069.mp3
+AudioLeadIn: 0
+PreviewTime: 65465
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.4
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 1
+
+[Editor]
+DistanceSpacing: 1.3
+BeatDivisor: 4
+GridSize: 16
+TimelineZoom: 1
+
+[Metadata]
+Title:Rinne
+TitleUnicode:輪廻
+Artist:Yamamoto Mineko
+ArtistUnicode:山本美禰子
+Creator:Dored
+Version:Hard
+Source:さくら、もゆ。-as the Night's, Reincarnation-
+Tags:Sakura Moyu as the Nights Reincarnation Galgame Eroge Visual Novel Opening Short Version Favorite Japanese OP2 thzz Affirmation Neoskylove Tsumia Silky Kanau Mamayu fuyuyu- -Nanaka- Garden
+BeatmapID:1980178
+BeatmapSetID:948133
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:3.8
+OverallDifficulty:6.5
+ApproachRate:8
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"Azusa.jpg",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+935,335.195530726257,4,2,1,40,1,0
+2275,-125,4,2,1,40,0,0
+13002,-111.111111111111,4,2,1,50,0,0
+18365,-100,4,2,1,65,0,0
+25571,-100,4,2,1,50,0,0
+26409,-125,4,2,1,50,0,0
+47862,-111.111111111111,4,2,1,55,0,0
+58588,-100,4,2,1,60,0,0
+63951,-100,4,2,1,65,0,0
+66633,-90.9090909090909,4,2,1,75,0,1
+77024,-90.9090909090909,4,2,1,75,0,0
+77359,-90.9090909090909,4,2,1,75,0,1
+87750,-90.9090909090909,4,2,1,75,0,0
+88085,-90.9090909090909,4,2,1,75,0,1
+92108,-90.9090909090909,4,2,1,75,0,0
+93448,-100,4,2,1,65,0,0
+98812,-100,4,2,1,60,0,0
+101493,-100,4,2,1,65,0,0
+104259,-100,4,2,1,30,0,0
+106856,-100,4,2,1,20,0,0
+108197,-100,4,2,1,10,0,0
+109538,-100,4,2,1,5,0,0
+
+
+[Colours]
+Combo1 : 49,191,49
+Combo2 : 205,200,152
+Combo3 : 221,40,54
+Combo4 : 249,191,17
+
 [HitObjects]
 294,255,6442
 442,262,7258

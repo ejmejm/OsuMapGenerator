@@ -1,3 +1,72 @@
+osu file format v14
+
+[General]
+AudioFilename: 10058.mp3
+AudioLeadIn: 0
+PreviewTime: 4474
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+Bookmarks: 184,5898,17326,28755,40183,51612,63041,67326,70183,80897
+DistanceSpacing: 1.7
+BeatDivisor: 8
+GridSize: 4
+TimelineZoom: 1.099999
+
+[Metadata]
+Title:Poshli vy v zhopu!
+TitleUnicode:Пошли вы в жопу!
+Artist:Bianka AKA Kralya
+ArtistUnicode:Бьянка АКА Краля
+Creator:Sieg
+Version:Bakari's Insane
+Source:
+Tags:hip-hop rap russian bakari ticclick marmowka fcl namki shmiklak wajinshu refaller nelly хейтеры-хуейтеры
+BeatmapID:975745
+BeatmapSetID:454827
+
+[Difficulty]
+HPDrainRate:7
+CircleSize:4.3
+OverallDifficulty:7.5
+ApproachRate:9
+SliderMultiplier:2.6
+SliderTickRate:4
+
+[Events]
+//Background and Video events
+0,0,"peezdyukee-avtoreetety.jpg",0,0
+//Break Periods
+2,67531,69588
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+189,714.285714285714,4,2,1,30,1,0
+4831,-100,4,2,1,60,0,0
+5903,-100,4,2,1,60,0,0
+28760,-83.3333333333333,4,2,1,80,0,1
+40144,-100,4,2,1,80,0,0
+40188,-83.3333333333333,4,2,1,80,0,1
+51617,-100,4,2,1,60,0,0
+70188,714.285714285714,4,2,1,60,1,0
+70188,-100,4,2,1,60,0,0
+
+
+[Colours]
+Combo1 : 126,171,226
+Combo2 : 193,74,116
+Combo3 : 115,120,223
+Combo4 : 119,187,165
+
 [HitObjects]
 343,321,9315
 40,427,9447

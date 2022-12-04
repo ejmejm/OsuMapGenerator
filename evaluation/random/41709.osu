@@ -1,3 +1,79 @@
+osu file format v9
+
+[General]
+AudioFilename: 9248.mp3
+AudioLeadIn: 1500
+PreviewTime: 65620
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+DistanceSpacing: 1.2
+BeatDivisor: 4
+GridSize: 4
+
+[Metadata]
+Title:The Last Queen
+Artist:Usa
+Creator:banvi
+Version:Hard
+Source:Nico Nico Douga
+Tags:Megurine Luka Vocaloid kurousa-P
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:4
+OverallDifficulty:5
+ApproachRate:6
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"BG.jpg"
+//Break Periods
+2,80316,92239
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+857,405.405405405405,4,2,1,60,1,0
+5519,-100,4,2,1,70,0,0
+10384,-200,4,2,1,60,0,0
+13627,-100,4,2,1,70,0,0
+26600,-100,4,2,1,60,0,0
+38255,-100,4,1,1,40,0,0
+38661,-100,4,2,1,70,0,0
+39269,-100,4,1,1,40,0,0
+39674,-100,4,2,1,70,0,0
+52647,-133.333333333333,4,2,1,60,0,0
+59134,-100,4,2,1,70,0,0
+61971,-100,4,1,1,40,0,0
+62427,-100,4,2,1,60,0,0
+65721,-100,4,2,1,70,0,1
+80316,-100,4,2,1,70,0,0
+99674,-133.333333333333,4,2,1,50,0,0
+106262,-133.333333333333,4,2,1,60,0,0
+112647,-100,4,2,1,70,0,0
+115485,-100,4,1,1,40,0,0
+115941,-100,4,2,1,60,0,0
+119235,-100,4,2,1,70,0,1
+133829,-100,4,2,1,60,0,0
+
+[Colours]
+Combo1 : 0,91,0
+Combo2 : 255,30,30
+Combo3 : 0,78,155
+Combo4 : 147,0,147
+
 [HitObjects]
 96,474,7792
 147,460,8508

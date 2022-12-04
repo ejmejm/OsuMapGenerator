@@ -1,3 +1,61 @@
+osu file format v7
+
+[General]
+AudioFilename: 2227.mp3
+AudioLeadIn: 1000
+PreviewTime: 51043
+Countdown: 1
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 1
+
+[Editor]
+DistanceSpacing: 0.800000011920929
+BeatDivisor: 4
+GridSize: 8
+
+[Metadata]
+Title:Lonely In Gorgeous (TV Size)
+Artist:Tommy february6
+Creator:tmokb93
+Version:Easy
+Source:Paradise Kiss
+Tags:Ai Yazawa Parakiss
+
+[Difficulty]
+HPDrainRate:2
+CircleSize:3
+OverallDifficulty:2
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+Video,0,"Lonely In Gorgeous.avi"
+0,0,"paradisekiss.jpg"
+//Break Periods
+2,37904,40621
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+//Background Colour Transformations
+3,100,163,162,255
+
+[TimingPoints]
+540,447.761194029851,4,2,0,55,1,0
+29662,-100,4,2,0,81,0,0
+51043,-100,4,2,0,75,0,1
+86080,-100,4,2,0,0,0,0
+
+[Colours]
+Combo1 : 170,255,255
+Combo2 : 0,64,128
+Combo3 : 0,128,128
+Combo4 : 0,128,192
+
 [HitObjects]
 413,338,8063
 260,155,8280

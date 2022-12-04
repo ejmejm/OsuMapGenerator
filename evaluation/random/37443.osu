@@ -1,3 +1,91 @@
+osu file format v14
+
+[General]
+AudioFilename: 8352.mp3
+AudioLeadIn: 500
+PreviewTime: 31096
+Countdown: 0
+SampleSet: Soft
+StackLeniency: 0.7
+Mode: 0
+LetterboxInBreaks: 0
+WidescreenStoryboard: 0
+
+[Editor]
+Bookmarks: 15977,31215,46453,61691,69310,76929
+DistanceSpacing: 1
+BeatDivisor: 4
+GridSize: 4
+TimelineZoom: 1.9
+
+[Metadata]
+Title:Mikazuki
+TitleUnicode:ミカヅキ
+Artist:Sayuri
+ArtistUnicode:さユり
+Creator:Meg
+Version:Easy
+Source:乱歩奇譚 Game of Laplace
+Tags:Ranpo Kitan Ending 酸欠少女さユり Sanketsu Shoujo ノイタミナ Noitamina iMage--
+BeatmapID:731598
+BeatmapSetID:330009
+
+[Difficulty]
+HPDrainRate:3
+CircleSize:3
+OverallDifficulty:2
+ApproachRate:3
+SliderMultiplier:0.999999999999999
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"BG.jpg",0,0
+Video,0,"RanpoKitanED.avi"
+//Break Periods
+2,61890,67870
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+739,476.190476190476,4,2,2,40,1,0
+15977,-100,4,2,3,60,0,0
+29310,-100,4,2,1,60,0,0
+29786,-100,4,2,1,70,0,0
+31215,-100,4,2,1,80,0,1
+59786,-100,4,2,2,70,0,0
+61691,-100,4,2,2,60,0,0
+76929,508.474576271186,4,2,2,40,1,0
+77945,555.555555555556,4,2,2,40,1,0
+78500,521.739130434783,4,2,2,40,1,0
+78760,588.235294117647,4,2,2,40,1,0
+79056,600,4,2,2,40,1,0
+79356,631.578947368421,4,2,2,40,1,0
+79671,674.157303370787,4,2,2,40,1,0
+80008,600,4,2,2,40,1,0
+80308,1333.33333333333,4,2,2,40,1,0
+80974,545.454545454546,4,2,2,40,1,0
+81519,681.818181818182,4,2,2,40,1,0
+82200,600,4,2,2,40,1,0
+82500,800,4,2,2,40,1,0
+82900,681.818181818182,4,2,2,40,1,0
+83240,800,4,2,2,40,1,0
+84440,923.076923076923,4,2,2,30,1,0
+84901,882.352941176471,4,2,2,20,1,0
+85342,923.076923076923,4,2,2,20,1,0
+85803,1153.84615384615,4,2,2,20,1,0
+86379,476.190476190476,4,2,2,40,1,0
+
+
+[Colours]
+Combo1 : 101,107,154
+Combo2 : 255,0,0
+Combo3 : 120,120,120
+Combo4 : 240,113,9
+
 [HitObjects]
 9,98,5716
 640,313,6465
