@@ -15,7 +15,8 @@ ROOT_DIR = 'evaluation_data'
 MODEL_TO_PATH = {
     "random": os.path.join(ROOT_DIR, 'random'),
     "ours": os.path.join(ROOT_DIR, 'ours'),
-    "osumapper": os.path.join(ROOT_DIR, 'osumapper')
+    "osumapper": os.path.join(ROOT_DIR, 'osumapper'),
+    "human": os.path.join(ROOT_DIR, 'maps')
 }
 
 GROUND_TRUTH_PATH = os.path.join(ROOT_DIR, 'maps')
