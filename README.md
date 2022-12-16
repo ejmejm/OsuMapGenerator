@@ -1,5 +1,5 @@
 # Osu Map Generator
-by Edan Meyer, Yazeed Mahmoud ... add names here
+by Edan Meyer, Yazeed Mahmoud, Wenkai Gao, Hongxuan Liu and Yongfan Wang
 
 ### How To Use
 1. Download the formatted dataset, decompress it, and put the contents in the `data/` directory. This should leave you with a `data/formatted_beatmaps/` directory that contains the song and beatmap data.
