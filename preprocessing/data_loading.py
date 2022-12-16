@@ -30,7 +30,81 @@ DEFAULT_METADATA = set([
   'SliderMultiplier', 'SliderTickRate', 'HPDrainRate', 'FormatVersion'
 ])
 
+def load_beatmap_from_file_content(data):
+  """
+  Loads beatmap data from a .osu file.
+  
+  Args:
+    path: Path to the .osu file.
+  Returns:
+    A dictionary and two lists containing metatdata, timing points, and hit objects.
+  """
 
+  lines = data.split('\n')
+  metadata = {}
+  timing_points = []
+  hit_objects = []
+
+  # Get the osu file format version
+  result = re.search(VERSION_PATTERN, lines[0])
+  groups = result.groups() if result else tuple([None])
+  metadata['FormatVersion'] = groups[0]
+
+  ### Parse general metadata ###
+
+  curr_heading = ''
+  for line_idx, line in enumerate(lines):
+    line = line.strip()
+
+    # Stop metadata parsing when we reach the hitobjects
+    if line == '[TimingPoints]':
+      break
+
+    result = re.search(METADATA_ENTRY_PATTERN, line)
+    groups = result.groups() if result else tuple()
+
+    # This is a metadata entry
+    if len(groups) >= 2:
+      key, value = groups[0].strip(), groups[1].strip()
+      metadata[key] = value
+
+    # Capture section headings
+    elif line.startswith('['):
+      curr_heading = line[1:-1]
+
+    # Skip comments and emtpy lines
+    elif line.startswith('//') or line == '':
+      continue
+
+  ### Parse timing points and hit objects ###
+
+  for line_idx, line in enumerate(lines, start=line_idx):
+    line = line.strip()
+
+    # Capture section headings
+    if line.startswith('['):
+      curr_heading = line[1:-1]
+      continue
+
+    # Skip comments and emtpy lines
+    elif line.startswith('//') or line == '':
+      continue
+
+    # Check for timing points
+    if curr_heading == 'TimingPoints':
+      result = re.search(TIMING_POINT_PATTERN, line)
+      groups = result.groups() if result else tuple()
+      if len(groups) >= 1:
+        timing_points.append(groups[0].strip())
+
+    # Check for hit objects
+    elif curr_heading == 'HitObjects':
+      result = re.search(HIT_OBJECT_PATTERN, line)
+      groups = result.groups() if result else tuple()
+      if len(groups) >= 1:
+        hit_objects.append(groups[0].strip())
+
+  return metadata, timing_points, hit_objects
 
 def load_beatmap_data(path):
   """
